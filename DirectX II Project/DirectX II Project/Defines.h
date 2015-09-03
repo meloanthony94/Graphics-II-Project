@@ -19,3 +19,10 @@ using namespace DirectX;
 
 const bool Is_FullScreen = true;
 const bool Is_VSync = false;
+
+struct MatrixTrio
+{
+	XMMATRIX WorldMatrix;
+	XMMATRIX ViewMatrix;
+	XMMATRIX ProjectionMatrix;
+};

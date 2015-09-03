@@ -1,4 +1,5 @@
 #include "Defines.h"
+#include "Camera.h"
 
 class DxInit
 {
@@ -37,15 +38,23 @@ class DxInit
 	
 	unsigned int DxVertCount;
 
+	Camera Mycam;
+	XTime MrTimer;
+
 public:
 
 	DxInit(){};
 	~DxInit(){};
 	void CreateMyWindow(HINSTANCE hinst, WNDPROC proc);
+
 	void Initalize();
 	void InitSwapChain(HWND window, int width, int height);
 	void InitViewPort(float minDepth, float maxDepth, float width, float height, unsigned int NumOfViewPorts);
+	void InitVertexBuffers();
+	void InitIndexBuffers();
+	void InitTextures();
 	void InitShaders();
+
 	bool Run();
 	void Resize();
 	void Release();

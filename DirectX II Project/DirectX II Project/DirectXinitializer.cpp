@@ -33,61 +33,15 @@ void DxInit::CreateMyWindow(HINSTANCE hinst, WNDPROC proc)
 
 void DxInit::Initalize()
 {
-	//Make function to handle all this
 	InitSwapChain(window, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT);
 	InitViewPort(0, 1, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, 1);
 
-	//////
-	D3D11_BUFFER_DESC VertexBuffDescript;
-	ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
-	VertexBuffDescript.ByteWidth = sizeof(_OBJ_VERT_) * 776;
-	VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
+	Mycam.InitMatrices(BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT);
 
-	D3D11_SUBRESOURCE_DATA VertexData;
-	ZeroMemory(&VertexData, sizeof(VertexData));
-	VertexData.pSysMem = Cube_data;
+	InitVertexBuffers();
+	InitIndexBuffers();
 
-	DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
-	////////
-
-	////////
-	D3D11_BUFFER_DESC IndexBuffDesc;
-	ZeroMemory(&IndexBuffDesc, sizeof(IndexBuffDesc));
-	IndexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
-	IndexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	IndexBuffDesc.CPUAccessFlags = NULL;
-	IndexBuffDesc.ByteWidth = sizeof(unsigned int) * 1692;
-
-	D3D11_SUBRESOURCE_DATA IndexData;
-	ZeroMemory(&IndexData, sizeof(IndexData));
-	IndexData.pSysMem = Cube_indicies;
-
-	DxDevice->CreateBuffer(&IndexBuffDesc, &IndexData, &IndexBuffer);
-	//////////
-
-	/////////
-	D3D11_TEXTURE2D_DESC DxTextureDesc;
-	ZeroMemory(&DxTextureDesc, sizeof(DxTextureDesc));
-	DxTextureDesc.Width = crosshatch_width;
-	DxTextureDesc.Height = crosshatch_height;
-	DxTextureDesc.MipLevels = 11;
-	DxTextureDesc.ArraySize = 1;
-	DxTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	DxTextureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	DxTextureDesc.Usage = D3D11_USAGE_DEFAULT;
-	DxTextureDesc.SampleDesc.Count = 1;
-
-	D3D11_SUBRESOURCE_DATA DxTextureData[11]; //copy over
-	for (int i = 0; i < 11; i++)
-	{
-		DxTextureData[i].pSysMem = &crosshatch_pixels[crosshatch_leveloffsets[i]];
-		DxTextureData[i].SysMemPitch = (crosshatch_width >> i) * sizeof(UINT);
-		DxTextureData[i].SysMemSlicePitch = 0;
-	}
-
-	DxDevice->CreateTexture2D(&DxTextureDesc, DxTextureData, &Dx2DTexture);
-	///////////
+	InitTextures();
 
 	///////
 	D3D11_SAMPLER_DESC DxSamplerDesc;
@@ -112,9 +66,65 @@ void DxInit::Initalize()
 	DxDevice->CreateShaderResourceView(Dx2DTexture, &DxShaderViewDesc, &DxShaderResourceView);
 	//////
 
+	////////
+	D3D11_TEXTURE2D_DESC descDepth;
+	ZeroMemory(&descDepth, sizeof(descDepth));
+	descDepth.Width = SwapDescrip.BufferDesc.Width;
+	descDepth.Height = SwapDescrip.BufferDesc.Height;
+	descDepth.MipLevels = 1;
+	descDepth.ArraySize = 1;
+	descDepth.Format = DXGI_FORMAT_D32_FLOAT;
+	descDepth.SampleDesc.Count = 1;
+	descDepth.SampleDesc.Quality = 0;
+	descDepth.Usage = D3D11_USAGE_DEFAULT;
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	descDepth.CPUAccessFlags = 0;
+	descDepth.MiscFlags = 0;
+	DxDevice->CreateTexture2D(&descDepth, NULL, &DxDeviceDepthStencil);
+	////////
 
+	////////
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
+	ZeroMemory(&descDSV, sizeof(descDSV));
+	descDSV.Format = DXGI_FORMAT_D32_FLOAT;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.Texture2D.MipSlice = 0;
 
-	//DxInitializer.InitShaders();
+	// Create the depth stencil view
+	DxDevice->CreateDepthStencilView(DxDeviceDepthStencil, // Depth stencil texture
+		&descDSV, // Depth stencil desc
+		&DxStencilView);  // [out] Depth stencil view
+
+	// //Bind the depth stencil view
+	//DxDeviceContext->OMSetRenderTargets(1,          // One rendertarget view
+	//	&DxRenderTargetView,      // Render target view, created earlier
+	//	DxStencilView);     // Depth stencil view for the render target
+
+	////////
+
+	InitShaders();
+
+	////////
+	D3D11_INPUT_ELEMENT_DESC TriLayout[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "UVCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	DxDevice->CreateInputLayout(TriLayout, 3, Trivial_VS, sizeof(Trivial_VS), &layout);
+	////////
+
+	////////
+	D3D11_BUFFER_DESC ConstBuffDescript;
+	ZeroMemory(&ConstBuffDescript, sizeof(ConstBuffDescript));
+	ConstBuffDescript.ByteWidth = sizeof(MatrixTrio);
+	ConstBuffDescript.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	// ConstBuffDescript.StructureByteStride = sizeof(MatrixTrio);
+	ConstBuffDescript.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	ConstBuffDescript.Usage = D3D11_USAGE_DYNAMIC;
+
+	DxDevice->CreateBuffer(&ConstBuffDescript, NULL, &ConstBuffer);
+	////////
 }
 
 void DxInit::InitSwapChain(HWND window, int width, int height)
@@ -153,6 +163,61 @@ void DxInit::InitViewPort(float minDepth, float maxDepth, float width, float hei
 	DxDeviceContext->RSSetViewports(NumOfViewPorts, &DxViewPort);
 }
 
+void DxInit::InitVertexBuffers()
+{
+	D3D11_BUFFER_DESC VertexBuffDescript;
+	ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
+	VertexBuffDescript.ByteWidth = sizeof(_OBJ_VERT_) * 776;
+	VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
+
+	D3D11_SUBRESOURCE_DATA VertexData;
+	ZeroMemory(&VertexData, sizeof(VertexData));
+	VertexData.pSysMem = Cube_data;
+
+	DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
+}
+
+void DxInit::InitIndexBuffers()
+{
+	D3D11_BUFFER_DESC IndexBuffDesc;
+	ZeroMemory(&IndexBuffDesc, sizeof(IndexBuffDesc));
+	IndexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
+	IndexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	IndexBuffDesc.CPUAccessFlags = NULL;
+	IndexBuffDesc.ByteWidth = sizeof(unsigned int) * 1692;
+
+	D3D11_SUBRESOURCE_DATA IndexData;
+	ZeroMemory(&IndexData, sizeof(IndexData));
+	IndexData.pSysMem = Cube_indicies;
+
+	DxDevice->CreateBuffer(&IndexBuffDesc, &IndexData, &IndexBuffer);
+}
+
+void DxInit::InitTextures()
+{
+	D3D11_TEXTURE2D_DESC DxTextureDesc;
+	ZeroMemory(&DxTextureDesc, sizeof(DxTextureDesc));
+	DxTextureDesc.Width = crosshatch_width;
+	DxTextureDesc.Height = crosshatch_height;
+	DxTextureDesc.MipLevels = 11;
+	DxTextureDesc.ArraySize = 1;
+	DxTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	DxTextureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	DxTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	DxTextureDesc.SampleDesc.Count = 1;
+
+	D3D11_SUBRESOURCE_DATA DxTextureData[11]; //copy over
+	for (int i = 0; i < 11; i++)
+	{
+		DxTextureData[i].pSysMem = &crosshatch_pixels[crosshatch_leveloffsets[i]];
+		DxTextureData[i].SysMemPitch = (crosshatch_width >> i) * sizeof(UINT);
+		DxTextureData[i].SysMemSlicePitch = 0;
+	}
+
+	DxDevice->CreateTexture2D(&DxTextureDesc, DxTextureData, &Dx2DTexture);
+}
+
 void DxInit::InitShaders()
 {
 	DxDevice->CreateVertexShader(Trivial_VS, sizeof(Trivial_VS), NULL, &DxVertexShader);
@@ -161,15 +226,81 @@ void DxInit::InitShaders()
 
 bool DxInit::Run()
 {
-	//DxDeviceContext->OMSetRenderTargets(1, &DxRenderTargetView, DxStencilView);
+	////
+	MrTimer.Signal();
+	if (MrTimer.TotalTime() > 360)
+		MrTimer.Restart();
+	////
 
-	DxDeviceContext->OMSetRenderTargets(1, &DxRenderTargetView, NULL);
+	///////
+	MatrixTrio world;
+	world.WorldMatrix = XMMatrixIdentity();
+	world.WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), Mycam.GetMatrix().WorldMatrix);
+	
+	Mycam.SetMatrix(world, 1);
+	
+	Mycam.CameraTranslation();
+	Mycam.CameraRotation();
+	////////
 
+	///////
+	DxDeviceContext->OMSetRenderTargets(1, &DxRenderTargetView, DxStencilView);
+	/////
+
+	/////
 	DxDeviceContext->RSSetViewports(1, &DxViewPort);
+	/////
 
+	/////
 	float Color[4] = { 0, 0.0f, 1.0f, 1 };
 	DxDeviceContext->ClearRenderTargetView(DxRenderTargetView, Color);
-	//DxDeviceContext->ClearDepthStencilView(DxStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	DxDeviceContext->ClearDepthStencilView(DxStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	/////
+
+	/////
+	D3D11_MAPPED_SUBRESOURCE  RotateSub;
+	ZeroMemory(&RotateSub, sizeof(RotateSub));
+	DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &RotateSub);
+	memcpy(RotateSub.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
+	DxDeviceContext->Unmap(ConstBuffer, NULL);
+	/////
+
+	/////
+	DxDeviceContext->VSSetConstantBuffers(1, 1, &ConstBuffer);
+	//////
+
+	//////
+	unsigned int pStrides = sizeof(_OBJ_VERT_);
+	unsigned int pOffset = 0;
+	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &pStrides, &pOffset);
+
+	DxDeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	//////////
+
+	///////
+	DxDeviceContext->VSSetShader(DxVertexShader, 0, 0);
+	DxDeviceContext->PSSetShader(DxPixelShader, 0, 0);
+	///////
+
+	//////
+	DxDeviceContext->IASetInputLayout(layout);
+	/////
+
+	/////
+	DxDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	/////
+
+	/////
+	DxDeviceContext->PSSetSamplers(0, 1, &DxSampler);
+	/////
+
+	/////
+	DxDeviceContext->PSSetShaderResources(0, 1, &DxShaderResourceView);
+	//////
+
+	/////
+	DxDeviceContext->DrawIndexed(1692, 0, 0);
+	/////
 
 	DxSwapChain->Present(0, 0);
 	return true;
@@ -215,22 +346,22 @@ void DxInit::Release()
 	Dx2DTexture->Release();
 	
 //	DxBuffer->Release();
-//	ConstBuffer->Release();
+	ConstBuffer->Release();
 //	ConstSceneBuffer->Release();
-	
-//	DxVertexShader->Release();
-//	DxPixelShader->Release();
-	
-//	layout->Release();
-	
-//	DxStencilView->Release();
-//	DxDeviceDepthStencil->Release();
-	
-//	VertexBuffer->Release();
-//	IndexBuffer->Release();
-	
-//	DxSampler->Release();
-//	DxShaderResourceView->Release();
+
+	DxVertexShader->Release();
+	DxPixelShader->Release();
+
+	layout->Release();
+
+	DxStencilView->Release();
+	DxDeviceDepthStencil->Release();
+
+	VertexBuffer->Release();
+	IndexBuffer->Release();
+
+	DxSampler->Release();
+	DxShaderResourceView->Release();
 
 	UnregisterClass(L"DirectXApplication", application);
 }

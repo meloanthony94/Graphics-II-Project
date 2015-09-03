@@ -3,18 +3,15 @@
 
 __declspec(align(16)) class Camera
 {
-	struct MatrixTrio
-	{
-		XMMATRIX WorldMatrix;
-		XMMATRIX ViewMatrix;
-		XMMATRIX ProjectionMatrix;
-	};
-
 	MatrixTrio Matricies;
 
 public:
 	Camera();
 	~Camera();
 	void InitMatrices(float width, float height);
+	MatrixTrio GetMatrix(){ return Matricies; };
+	void SetMatrix(MatrixTrio newMatrix, int type);
+	void CameraTranslation();
+	void CameraRotation();
 };
 
