@@ -53,6 +53,12 @@ public:
 	void InitVertexBuffers();
 	void InitIndexBuffers();
 	void InitTextures();
+	void InitSampler();
+	void InitSRVs();
+	void InitDepthStencils();
+	void InitDepthStencilViews();
+	void InitInputLayouts();
+	void InitConstBuffers();
 	void InitShaders();
 
 	bool Run();
