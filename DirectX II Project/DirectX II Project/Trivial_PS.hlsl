@@ -10,7 +10,7 @@ struct P_IN
 };
 
 texture2D baseTexture : register(t0);
-
+texture2D SecondTexture : register(t1);
 
 SamplerState filter : register(s0);
 
@@ -18,11 +18,11 @@ float4 main(P_IN modulate) : SV_TARGET
 {
 	float4 baseColor = baseTexture.Sample(filter, modulate.UV.xy);
 
-	float4 col;
-	col.a = baseColor.b;
-	col.r = baseColor.g;
-	col.g = baseColor.r;
-	col.b = baseColor.a;
+	//float4 col;
+	//col.a = baseColor.b;
+	//col.r = baseColor.g;
+	//col.g = baseColor.r;
+	//col.b = baseColor.a;
 
-	return col;
+	return baseColor;
 }

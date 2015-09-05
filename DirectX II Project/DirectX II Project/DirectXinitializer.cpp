@@ -94,17 +94,34 @@ void DxInit::InitViewPort(float minDepth, float maxDepth, float width, float hei
 
 void DxInit::InitVertexBuffers()
 {
+	Model.LoadObject("test pyramid.obj", &vertices, &uvs, &normals);
+
 	D3D11_BUFFER_DESC VertexBuffDescript;
 	ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
 	VertexBuffDescript.ByteWidth = sizeof(_OBJ_VERT_) * 776;
 	VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
 
+	//Lab 8 //copy over
 	D3D11_SUBRESOURCE_DATA VertexData;
 	ZeroMemory(&VertexData, sizeof(VertexData));
 	VertexData.pSysMem = Cube_data;
 
 	DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
+
+	//D3D11_BUFFER_DESC VertexBuffDescript;
+	//ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
+	//VertexBuffDescript.ByteWidth = (unsigned int)(sizeof(XMFLOAT3) * vertices.size());
+	//VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	//VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
+	//VertexBuffDescript.StructureByteStride = sizeof(XMFLOAT3);
+	//
+	//D3D11_SUBRESOURCE_DATA VertexData;
+	//ZeroMemory(&VertexData, sizeof(VertexData));
+	//VertexData.pSysMem = &vertices;
+	//
+	//DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
+
 }
 
 void DxInit::InitIndexBuffers()
@@ -115,11 +132,11 @@ void DxInit::InitIndexBuffers()
 	IndexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	IndexBuffDesc.CPUAccessFlags = NULL;
 	IndexBuffDesc.ByteWidth = sizeof(unsigned int) * 1692;
-
+	
 	D3D11_SUBRESOURCE_DATA IndexData;
 	ZeroMemory(&IndexData, sizeof(IndexData));
 	IndexData.pSysMem = Cube_indicies;
-
+	
 	DxDevice->CreateBuffer(&IndexBuffDesc, &IndexData, &IndexBuffer);
 }
 
@@ -144,7 +161,9 @@ void DxInit::InitTextures()
 		DxTextureData[i].SysMemSlicePitch = 0;
 	}
 
-	DxDevice->CreateTexture2D(&DxTextureDesc, DxTextureData, &Dx2DTexture);
+	//DxDevice->CreateTexture2D(&DxTextureDesc, DxTextureData, &Dx2DTexture);
+	HRESULT hr;
+	hr = CreateDDSTextureFromFile(DxDevice, L"metallock.dds", NULL, &DxShaderResourceView);
 }
 
 void DxInit::InitSampler()
@@ -163,13 +182,13 @@ void DxInit::InitSampler()
 
 void DxInit::InitSRVs()
 {
-	D3D11_SHADER_RESOURCE_VIEW_DESC DxShaderViewDesc;
-	ZeroMemory(&DxShaderViewDesc, sizeof(DxShaderViewDesc));
-	DxShaderViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	DxShaderViewDesc.Texture2D.MostDetailedMip = 0;
-	DxShaderViewDesc.Texture2D.MipLevels = 11;
-	DxShaderViewDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	DxDevice->CreateShaderResourceView(Dx2DTexture, &DxShaderViewDesc, &DxShaderResourceView);
+	//D3D11_SHADER_RESOURCE_VIEW_DESC DxShaderViewDesc;
+	//ZeroMemory(&DxShaderViewDesc, sizeof(DxShaderViewDesc));
+	//DxShaderViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	//DxShaderViewDesc.Texture2D.MostDetailedMip = 0;
+	//DxShaderViewDesc.Texture2D.MipLevels = 11;
+	//DxShaderViewDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	//DxDevice->CreateShaderResourceView(Dx2DTexture, &DxShaderViewDesc, &DxShaderResourceView);
 }
 
 void DxInit::InitDepthStencils()

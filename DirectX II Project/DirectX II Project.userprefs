@@ -1,0 +1,13 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workbench ActiveDocument="..\..\..\Sun Sentinels\Sun-Sentinels\Sun Sentinels\Assets\Dev\Scripts\Controllers\CameraController.cs">
+    <Files>
+      <File FileName="..\..\..\Sun Sentinels\Sun-Sentinels\Sun Sentinels\Assets\Dev\Scripts\GameObjectScripts\Entities\Sentinels\ScarabEggScript.cs" Line="17" Column="55" />
+      <File FileName="..\..\..\Sun Sentinels\Sun-Sentinels\Sun Sentinels\Assets\Dev\Scripts\Controllers\CameraController.cs" Line="127" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

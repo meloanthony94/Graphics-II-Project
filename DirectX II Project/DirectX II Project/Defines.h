@@ -10,6 +10,7 @@
 #include <iostream>
 #include <ctime>
 #include "XTime.h"
+#include <vector>
 
 using namespace std;
 using namespace DirectX;

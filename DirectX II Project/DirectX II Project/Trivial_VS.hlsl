@@ -42,6 +42,6 @@ OUTPUT_VERTEX main(INPUT_VERTEX fromVertexBuffer)
 	//output.colorOut = fromVertexBuffer.colorOut;
 	output.projectedCoordinate = newVertex;
 	output.UV = fromVertexBuffer.UV;
-
+	output.norm.y = 1 - output.norm.y;
 	return output;
 }

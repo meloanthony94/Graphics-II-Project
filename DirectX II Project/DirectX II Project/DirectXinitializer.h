@@ -1,5 +1,7 @@
 #include "Defines.h"
 #include "Camera.h"
+#include "Object.h"
+#include "DDSTextureLoader.h"
 
 class DxInit
 {
@@ -40,6 +42,11 @@ class DxInit
 
 	Camera Mycam;
 	XTime MrTimer;
+	Object Model;
+
+	vector< XMFLOAT3 > vertices;
+	vector< XMFLOAT2 > uvs;
+	vector< XMFLOAT3 > normals;
 
 public:
 
