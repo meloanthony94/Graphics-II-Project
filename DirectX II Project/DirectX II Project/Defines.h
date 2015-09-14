@@ -27,3 +27,19 @@ struct MatrixTrio
 	XMMATRIX ViewMatrix;
 	XMMATRIX ProjectionMatrix;
 };
+
+struct Send_To_VRAM
+{
+	XMFLOAT3 Position;
+	XMFLOAT4 Color;
+	XMFLOAT2 UV;
+	XMFLOAT3 norms;
+};
+
+struct Vertex
+{
+	float Mrarray[4];
+	unsigned int MrColor;
+	float U;
+	float V;
+};

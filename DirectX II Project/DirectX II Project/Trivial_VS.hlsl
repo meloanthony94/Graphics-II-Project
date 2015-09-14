@@ -3,23 +3,28 @@
 struct INPUT_VERTEX
 {
 	float3 coordinate : POSITION;
-	float3 UV : UVCOORD;
+	float4 color : COLOR;
+	float2 UV : UVCOORD;
 	float3 norm : NORMAL;
 };
 
 struct OUTPUT_VERTEX
 {
 	float4 projectedCoordinate : SV_POSITION;
-	float3 UV : UVCOORD;
+	float4 color : COLOR;
+	float2 UV : UVCOORD;
 	float3 norm : NORMAL;
 };
 
 // TODO: PART 3 STEP 2a
 cbuffer THIS_IS_VRAM : register(b0)
 {
+	float3 constantOffset;
+	float1 padding;
 	float4 constantColor;
-	float2 constantOffset;
-	float2 padding;
+	float2 UV;
+	float3 norms;
+	//float3 instance;
 };
 
 cbuffer MatrixTrio : register(b1)
@@ -38,10 +43,13 @@ OUTPUT_VERTEX main(INPUT_VERTEX fromVertexBuffer)
 	newVertex = mul(newVertex, WorldMatrix);
 	newVertex = mul(newVertex, ViewMatrix);
 	newVertex = mul(newVertex, ProjectionMatrix);
-
+   
 	//output.colorOut = fromVertexBuffer.colorOut;
 	output.projectedCoordinate = newVertex;
 	output.UV = fromVertexBuffer.UV;
+	output.UV.y = 1 - fromVertexBuffer.UV.y;
+
+	output.norm = fromVertexBuffer.norm;
 	output.norm.y = 1 - output.norm.y;
 	return output;
 }

@@ -1,6 +1,5 @@
 #include "DirectXinitializer.h"
 #include "Cube.h"
-#include "crosshatch.h"
 
 void DxInit::CreateMyWindow(HINSTANCE hinst, WNDPROC proc)
 {
@@ -94,33 +93,34 @@ void DxInit::InitViewPort(float minDepth, float maxDepth, float width, float hei
 
 void DxInit::InitVertexBuffers()
 {
-	Model.LoadObject("test pyramid.obj", &vertices, &uvs, &normals);
-
-	D3D11_BUFFER_DESC VertexBuffDescript;
-	ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
-	VertexBuffDescript.ByteWidth = sizeof(_OBJ_VERT_) * 776;
-	VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
-
-	//Lab 8 //copy over
-	D3D11_SUBRESOURCE_DATA VertexData;
-	ZeroMemory(&VertexData, sizeof(VertexData));
-	VertexData.pSysMem = Cube_data;
-
-	DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
-
+	Model.LoadObject("Spider-Man_Scarlet_Spider.obj", &vertices, &uvs, &normals, &index);
+	//Star = Model.CreateStar();
+	//
 	//D3D11_BUFFER_DESC VertexBuffDescript;
 	//ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
-	//VertexBuffDescript.ByteWidth = (unsigned int)(sizeof(XMFLOAT3) * vertices.size());
+	//VertexBuffDescript.ByteWidth = sizeof(Vertex) * 12;
 	//VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	//VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
-	//VertexBuffDescript.StructureByteStride = sizeof(XMFLOAT3);
 	//
 	//D3D11_SUBRESOURCE_DATA VertexData;
 	//ZeroMemory(&VertexData, sizeof(VertexData));
-	//VertexData.pSysMem = &vertices;
+	//VertexData.pSysMem = &Star;
 	//
 	//DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
+
+	//.obj
+	D3D11_BUFFER_DESC VertexBuffDescript;
+	ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
+	VertexBuffDescript.ByteWidth = (unsigned int)(sizeof(Send_To_VRAM) * vertices.size());
+	VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
+	VertexBuffDescript.StructureByteStride = sizeof(Send_To_VRAM);
+	
+	D3D11_SUBRESOURCE_DATA VertexData;
+	ZeroMemory(&VertexData, sizeof(VertexData));
+	VertexData.pSysMem = &vertices[0];
+	
+	DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
 
 }
 
@@ -131,39 +131,40 @@ void DxInit::InitIndexBuffers()
 	IndexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
 	IndexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	IndexBuffDesc.CPUAccessFlags = NULL;
-	IndexBuffDesc.ByteWidth = sizeof(unsigned int) * 1692;
+	IndexBuffDesc.ByteWidth = sizeof(unsigned int) * index.size();
 	
 	D3D11_SUBRESOURCE_DATA IndexData;
 	ZeroMemory(&IndexData, sizeof(IndexData));
-	IndexData.pSysMem = Cube_indicies;
+	IndexData.pSysMem = &index[0];
 	
 	DxDevice->CreateBuffer(&IndexBuffDesc, &IndexData, &IndexBuffer);
 }
 
 void DxInit::InitTextures()
 {
-	D3D11_TEXTURE2D_DESC DxTextureDesc;
-	ZeroMemory(&DxTextureDesc, sizeof(DxTextureDesc));
-	DxTextureDesc.Width = crosshatch_width;
-	DxTextureDesc.Height = crosshatch_height;
-	DxTextureDesc.MipLevels = 11;
-	DxTextureDesc.ArraySize = 1;
-	DxTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	DxTextureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	DxTextureDesc.Usage = D3D11_USAGE_DEFAULT;
-	DxTextureDesc.SampleDesc.Count = 1;
-
-	D3D11_SUBRESOURCE_DATA DxTextureData[11]; //copy over
-	for (int i = 0; i < 11; i++)
-	{
-		DxTextureData[i].pSysMem = &crosshatch_pixels[crosshatch_leveloffsets[i]];
-		DxTextureData[i].SysMemPitch = (crosshatch_width >> i) * sizeof(UINT);
-		DxTextureData[i].SysMemSlicePitch = 0;
-	}
+	//D3D11_TEXTURE2D_DESC DxTextureDesc;
+	//ZeroMemory(&DxTextureDesc, sizeof(DxTextureDesc));
+	//DxTextureDesc.Width = crosshatch_width;
+	//DxTextureDesc.Height = crosshatch_height;
+	//DxTextureDesc.MipLevels = 11;
+	//DxTextureDesc.ArraySize = 1;
+	//DxTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	//DxTextureDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	//DxTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+	//DxTextureDesc.SampleDesc.Count = 1;
+	//
+	//D3D11_SUBRESOURCE_DATA DxTextureData[11]; //copy over
+	//for (int i = 0; i < 11; i++)
+	//{
+	//	DxTextureData[i].pSysMem = &crosshatch_pixels[crosshatch_leveloffsets[i]];
+	//	DxTextureData[i].SysMemPitch = (crosshatch_width >> i) * sizeof(UINT);
+	//	DxTextureData[i].SysMemSlicePitch = 0;
+	//}
 
 	//DxDevice->CreateTexture2D(&DxTextureDesc, DxTextureData, &Dx2DTexture);
-	HRESULT hr;
-	hr = CreateDDSTextureFromFile(DxDevice, L"metallock.dds", NULL, &DxShaderResourceView);
+	CreateDDSTextureFromFile(DxDevice, L"Scarlet_Spiderman_D.dds", NULL, &DxShaderResourceView);
+	//CreateDDSTextureFromFile(DxDevice, L"bleachedWood_seamless.dds", NULL, &DxShaderResourceView2);
+
 }
 
 void DxInit::InitSampler()
@@ -232,11 +233,13 @@ void DxInit::InitInputLayouts()
 {
 	D3D11_INPUT_ELEMENT_DESC TriLayout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "UVCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "UVCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		//{ "INSTANCE", 0, DXGI_FORMAT_R32G32B32_OFLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
-	DxDevice->CreateInputLayout(TriLayout, 3, Trivial_VS, sizeof(Trivial_VS), &layout);
+	DxDevice->CreateInputLayout(TriLayout, 4, Trivial_VS, sizeof(Trivial_VS), &layout);
 }
 
 void DxInit::InitConstBuffers()
@@ -245,7 +248,7 @@ void DxInit::InitConstBuffers()
 	ZeroMemory(&ConstBuffDescript, sizeof(ConstBuffDescript));
 	ConstBuffDescript.ByteWidth = sizeof(MatrixTrio);
 	ConstBuffDescript.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	// ConstBuffDescript.StructureByteStride = sizeof(MatrixTrio);
+    //ConstBuffDescript.StructureByteStride = sizeof(MatrixTrio);
 	ConstBuffDescript.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	ConstBuffDescript.Usage = D3D11_USAGE_DYNAMIC;
 
@@ -304,7 +307,7 @@ bool DxInit::Run()
 	//////
 
 	//////
-	unsigned int pStrides = sizeof(_OBJ_VERT_);
+	unsigned int pStrides = sizeof(Send_To_VRAM);
 	unsigned int pOffset = 0;
 	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &pStrides, &pOffset);
 
@@ -330,10 +333,12 @@ bool DxInit::Run()
 
 	/////
 	DxDeviceContext->PSSetShaderResources(0, 1, &DxShaderResourceView);
+	//DxDeviceContext->PSSetShaderResources(1, 1, &DxShaderResourceView2);
 	//////
 
 	/////
-	DxDeviceContext->DrawIndexed(1692, 0, 0);
+	//DxDeviceContext->DrawIndexed(index.size(), 0, 0);
+	DxDeviceContext->Draw(index.size(), 0);
 	/////
 
 	DxSwapChain->Present(0, 0);
@@ -396,6 +401,7 @@ void DxInit::Release()
 
 	DxSampler->Release();
 	DxShaderResourceView->Release();
+//	DxShaderResourceView2->Release();
 
 	UnregisterClass(L"DirectXApplication", application);
 }

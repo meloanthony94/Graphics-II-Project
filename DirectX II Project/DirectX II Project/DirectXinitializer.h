@@ -37,6 +37,7 @@ class DxInit
 	
 	ID3D11SamplerState * DxSampler;
 	ID3D11ShaderResourceView * DxShaderResourceView;
+	ID3D11ShaderResourceView * DxShaderResourceView2;
 	
 	unsigned int DxVertCount;
 
@@ -44,9 +45,12 @@ class DxInit
 	XTime MrTimer;
 	Object Model;
 
-	vector< XMFLOAT3 > vertices;
+	vector< Send_To_VRAM > vertices;
 	vector< XMFLOAT2 > uvs;
 	vector< XMFLOAT3 > normals;
+	vector< unsigned int > index;
+
+	Vertex *Star;
 
 public:
 

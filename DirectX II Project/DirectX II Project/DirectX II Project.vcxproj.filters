@@ -73,5 +73,8 @@
     <Image Include="sheild.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="bleachedWood_seamless.dds" />
+    <Image Include="Spiderman_D.dds" />
+    <Image Include="Iron_Man_Marvel_NOW_D.dds" />
   </ItemGroup>
 </Project>

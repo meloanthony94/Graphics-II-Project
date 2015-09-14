@@ -5,7 +5,8 @@
 struct P_IN
 {
 	float4 projectedCoordinate : SV_POSITION;
-	float3 UV : UVCOORD;
+	float4 color : COLOR;
+	float2 UV : UVCOORD;
 	float3 norm : NORMAL;
 };
 
@@ -17,7 +18,9 @@ SamplerState filter : register(s0);
 float4 main(P_IN modulate) : SV_TARGET
 {
 	float4 baseColor = baseTexture.Sample(filter, modulate.UV.xy);
+	float4 newColor = SecondTexture.Sample(filter, modulate.UV.xy);
 
+	float4 Final = baseColor;// *newColor;
 	//float4 col;
 	//col.a = baseColor.b;
 	//col.r = baseColor.g;

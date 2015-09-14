@@ -203,8 +203,11 @@
     <None Include="Trivial_VS.csh" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="bleachedWood_seamless.dds" />
+    <Image Include="Iron_Man_Marvel_NOW_D.dds" />
     <Image Include="metallock.dds" />
     <Image Include="sheild.jpg" />
+    <Image Include="Spiderman_D.dds" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
