@@ -34,7 +34,7 @@ void DxInit::Initalize()
 	InitSwapChain(window, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT);
 	InitViewPort(0, 1, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, 1);
 
-	//InitRasterizer();
+	InitRasterizer();
 
 	Mycam.InitMatrices(BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT);
 
@@ -59,8 +59,8 @@ void DxInit::InitSwapChain(HWND window, int width, int height)
 {
 	ZeroMemory(&SwapDescrip, sizeof(SwapDescrip));
 	SwapDescrip.Windowed = TRUE;
-	SwapDescrip.SampleDesc.Count = 1;
-	SwapDescrip.SampleDesc.Quality = 0;
+	SwapDescrip.SampleDesc.Count = 4;
+	SwapDescrip.SampleDesc.Quality = D3D11_STANDARD_MULTISAMPLE_PATTERN;
 	SwapDescrip.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	SwapDescrip.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	SwapDescrip.BufferDesc.RefreshRate.Numerator = 60;
@@ -256,8 +256,8 @@ void DxInit::InitDepthStencils()
 	descDepth.MipLevels = 1;
 	descDepth.ArraySize = 1;
 	descDepth.Format = DXGI_FORMAT_D32_FLOAT;
-	descDepth.SampleDesc.Count = 1;
-	descDepth.SampleDesc.Quality = 0;
+	descDepth.SampleDesc.Count = 4;
+	descDepth.SampleDesc.Quality = D3D11_STANDARD_MULTISAMPLE_PATTERN;
 	descDepth.Usage = D3D11_USAGE_DEFAULT;
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
@@ -344,11 +344,13 @@ Mycam.CameraTranslation();
 	/////
 
 	/////
-	float Color[4] = { 0, 0.0f, 0.0f, 1 };
+	float Color[4] = { 0, 0.0f, 0.5f, 1 };
 
 	DxDeviceContext->ClearRenderTargetView(DxRenderTargetView, Color);
 	DxDeviceContext->ClearDepthStencilView(DxStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
 	/////
+	MyThings[0].WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), MyThings[0].WorldMatrix);
 	Mycam.SetWorldMatrix(MyThings[0].WorldMatrix);
 	D3D11_MAPPED_SUBRESOURCE Cube;
 	ZeroMemory(&Cube, sizeof(Cube));
@@ -403,9 +405,7 @@ Mycam.CameraTranslation();
 	DxDeviceContext->DrawIndexed(index.size(), 0, 0);
 	/////
 
-#pragma region SpiderMan
-
-	
+#pragma region SpiderMan	
 	MyThings[1].WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), MyThings[1].WorldMatrix);
 
 	Mycam.SetWorldMatrix(MyThings[1].WorldMatrix);
@@ -427,6 +427,8 @@ Mycam.CameraTranslation();
 
 	DxDeviceContext->Draw(index2.size(), 0);
 #pragma endregion 
+
+	DxDeviceContext->RSSetState(DxRasterState);
 
 	DxSwapChain->Present(0, 0);
 
@@ -492,7 +494,7 @@ void DxInit::Release()
 	DxShaderResourceView->Release();
 	DxShaderResourceView2->Release();
 
-	//DxRasterState->Release();
+	DxRasterState->Release();
 
 	UnregisterClass(L"DirectXApplication", application);
 }
