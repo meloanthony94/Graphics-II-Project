@@ -1,5 +1,4 @@
 #include "DirectXinitializer.h"
-#include "Cube.h"
 
 void DxInit::CreateMyWindow(HINSTANCE hinst, WNDPROC proc)
 {
@@ -35,10 +34,11 @@ void DxInit::Initalize()
 	InitSwapChain(window, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT);
 	InitViewPort(0, 1, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, 1);
 
+	//InitRasterizer();
+
 	Mycam.InitMatrices(BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT);
 
 	InitVertexBuffers();
-	InitIndexBuffers();
 
 	InitTextures();
 
@@ -81,6 +81,23 @@ void DxInit::InitSwapChain(HWND window, int width, int height)
 	DxDevice->CreateRenderTargetView(Dx2DTexture, NULL, &DxRenderTargetView);
 }
 
+void DxInit::InitRasterizer()
+{
+	D3D11_RASTERIZER_DESC _rasterDesc;
+	_rasterDesc.AntialiasedLineEnable = true; // changed to true
+	_rasterDesc.CullMode = D3D11_CULL_BACK;
+	_rasterDesc.DepthBias = 0;
+	_rasterDesc.DepthBiasClamp = 0.0f;
+	_rasterDesc.DepthClipEnable = true;
+	_rasterDesc.FillMode = D3D11_FILL_SOLID;
+	_rasterDesc.FrontCounterClockwise = false;
+	_rasterDesc.MultisampleEnable = true; // changed to true
+	_rasterDesc.ScissorEnable = false;
+	_rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+	DxDevice->CreateRasterizerState(&_rasterDesc, &DxRasterState);
+}
+
 void DxInit::InitViewPort(float minDepth, float maxDepth, float width, float height, unsigned int NumOfViewPorts)
 {
 	ZeroMemory(&DxViewPort, sizeof(D3D11_VIEWPORT));
@@ -93,35 +110,66 @@ void DxInit::InitViewPort(float minDepth, float maxDepth, float width, float hei
 
 void DxInit::InitVertexBuffers()
 {
-	Model.LoadObject("Spider-Man_Scarlet_Spider.obj", &vertices, &uvs, &normals, &index);
-	//Star = Model.CreateStar();
-	//
-	//D3D11_BUFFER_DESC VertexBuffDescript;
-	//ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
-	//VertexBuffDescript.ByteWidth = sizeof(Vertex) * 12;
-	//VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	//VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
-	//
-	//D3D11_SUBRESOURCE_DATA VertexData;
-	//ZeroMemory(&VertexData, sizeof(VertexData));
-	//VertexData.pSysMem = &Star;
-	//
-	//DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
-
-	//.obj
+	vector<Send_To_VRAM> Cube;
+	Model.CreateStar(Cube, &index);
+	
 	D3D11_BUFFER_DESC VertexBuffDescript;
 	ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
-	VertexBuffDescript.ByteWidth = (unsigned int)(sizeof(Send_To_VRAM) * vertices.size());
+	VertexBuffDescript.ByteWidth = sizeof(Send_To_VRAM) * Cube.size();
 	VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
-	VertexBuffDescript.StructureByteStride = sizeof(Send_To_VRAM);
 	
 	D3D11_SUBRESOURCE_DATA VertexData;
 	ZeroMemory(&VertexData, sizeof(VertexData));
-	VertexData.pSysMem = &vertices[0];
+	VertexData.pSysMem = &Cube[0];
 	
 	DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
+	InitIndexBuffers();
 
+	//.obj
+	Model.LoadObject("Spider-Man_Scarlet_Spider.obj", &vertices, &uvs, &normals, &index2);
+
+	D3D11_BUFFER_DESC VertexBuffDescript2;
+	ZeroMemory(&VertexBuffDescript2, sizeof(VertexBuffDescript2));
+	VertexBuffDescript2.ByteWidth = (unsigned int)(sizeof(Send_To_VRAM) * vertices.size());
+	VertexBuffDescript2.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	VertexBuffDescript2.Usage = D3D11_USAGE_IMMUTABLE;
+	VertexBuffDescript2.StructureByteStride = sizeof(Send_To_VRAM);
+	
+	D3D11_SUBRESOURCE_DATA VertexData2;
+	ZeroMemory(&VertexData2, sizeof(VertexData2));
+	VertexData2.pSysMem = &vertices[0];
+	
+	DxDevice->CreateBuffer(&VertexBuffDescript2, &VertexData2, &VertexBuffer2);
+	//InitIndexBuffers();
+
+
+	Thingys TempThingy;
+	/////////////////////
+	MatrixTrio CubeMatrix;
+	CubeMatrix.WorldMatrix;
+
+	TempThingy.Pos = { 0.5, 0, 0 };
+	TempThingy.Rotation = { 0, 0, 0 };
+
+	TempThingy.WorldMatrix = XMMatrixMultiply(XMMatrixRotationRollPitchYaw(TempThingy.Rotation.x, TempThingy.Rotation.y, TempThingy.Rotation.z),
+							XMMatrixTranslation(TempThingy.Pos.x, TempThingy.Pos.y, TempThingy.Pos.z));
+
+
+	MyThings.push_back(TempThingy);
+	/////////////////////////////////
+	MatrixTrio SpideyMatrix;
+	SpideyMatrix.WorldMatrix;
+
+	TempThingy.Pos = { 1, -2, 0 };
+	TempThingy.Rotation = { 0, /*XMConvertToRadians(180.0f)*/0, 0 };
+
+	TempThingy.WorldMatrix = XMMatrixMultiply(XMMatrixRotationRollPitchYaw(TempThingy.Rotation.x, TempThingy.Rotation.y, TempThingy.Rotation.z),
+												XMMatrixTranslation(TempThingy.Pos.x, TempThingy.Pos.y, TempThingy.Pos.z));
+
+	TempThingy.WorldMatrix = XMMatrixScaling(0.5,0.5,0.5);
+	MyThings.push_back(TempThingy);
+	////////////////////////
 }
 
 void DxInit::InitIndexBuffers()
@@ -162,9 +210,16 @@ void DxInit::InitTextures()
 	//}
 
 	//DxDevice->CreateTexture2D(&DxTextureDesc, DxTextureData, &Dx2DTexture);
-	CreateDDSTextureFromFile(DxDevice, L"Scarlet_Spiderman_D.dds", NULL, &DxShaderResourceView);
-	//CreateDDSTextureFromFile(DxDevice, L"bleachedWood_seamless.dds", NULL, &DxShaderResourceView2);
 
+	CreateDDSTextureFromFile(DxDevice, L"Scarlet_Spiderman_D.dds", NULL, &DxShaderResourceView);
+
+	//Create other texture in another thread
+	TexutreThread ThreadTexture;
+	ThreadTexture.ThreadDevice = &DxDevice;
+	ThreadTexture.ThreadSRV = &DxShaderResourceView2;
+
+	std::thread mrThread(LoadME, &ThreadTexture);
+	mrThread.join();
 }
 
 void DxInit::InitSampler()
@@ -215,7 +270,7 @@ void DxInit::InitDepthStencilViews()
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV;
 	ZeroMemory(&descDSV, sizeof(descDSV));
 	descDSV.Format = DXGI_FORMAT_D32_FLOAT;
-	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 	descDSV.Texture2D.MipSlice = 0;
 
 	// Create the depth stencil view
@@ -270,13 +325,13 @@ bool DxInit::Run()
 	////
 
 	///////
-	MatrixTrio world;
-	world.WorldMatrix = XMMatrixIdentity();
-	world.WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), Mycam.GetMatrix().WorldMatrix);
-	
-	Mycam.SetMatrix(world, 1);
-	
-	Mycam.CameraTranslation();
+	//MatrixTrio world;
+	//world.WorldMatrix = XMMatrixIdentity();
+	//world.WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), Mycam.GetMatrix().WorldMatrix);
+	//
+	//Mycam.SetMatrix(world, 1);
+	//
+Mycam.CameraTranslation();
 	Mycam.CameraRotation();
 	////////
 
@@ -289,17 +344,24 @@ bool DxInit::Run()
 	/////
 
 	/////
-	float Color[4] = { 0, 0.0f, 1.0f, 1 };
+	float Color[4] = { 0, 0.0f, 0.0f, 1 };
+
 	DxDeviceContext->ClearRenderTargetView(DxRenderTargetView, Color);
 	DxDeviceContext->ClearDepthStencilView(DxStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 	/////
+	Mycam.SetWorldMatrix(MyThings[0].WorldMatrix);
+	D3D11_MAPPED_SUBRESOURCE Cube;
+	ZeroMemory(&Cube, sizeof(Cube));
+	DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &Cube);
+	memcpy(Cube.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
+	DxDeviceContext->Unmap(ConstBuffer, NULL);
 
 	/////
-	D3D11_MAPPED_SUBRESOURCE  RotateSub;
-	ZeroMemory(&RotateSub, sizeof(RotateSub));
-	DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &RotateSub);
-	memcpy(RotateSub.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
-	DxDeviceContext->Unmap(ConstBuffer, NULL);
+	//D3D11_MAPPED_SUBRESOURCE  RotateSub;
+	//ZeroMemory(&RotateSub, sizeof(RotateSub));
+	//DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &RotateSub);
+	//memcpy(RotateSub.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
+	//DxDeviceContext->Unmap(ConstBuffer, NULL);
 	/////
 
 	/////
@@ -323,6 +385,7 @@ bool DxInit::Run()
 	DxDeviceContext->IASetInputLayout(layout);
 	/////
 
+
 	/////
 	DxDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	/////
@@ -333,15 +396,40 @@ bool DxInit::Run()
 
 	/////
 	DxDeviceContext->PSSetShaderResources(0, 1, &DxShaderResourceView);
-	//DxDeviceContext->PSSetShaderResources(1, 1, &DxShaderResourceView2);
+	DxDeviceContext->PSSetShaderResources(1, 1, &DxShaderResourceView2);
 	//////
 
 	/////
-	//DxDeviceContext->DrawIndexed(index.size(), 0, 0);
-	DxDeviceContext->Draw(index.size(), 0);
+	DxDeviceContext->DrawIndexed(index.size(), 0, 0);
 	/////
 
+#pragma region SpiderMan
+
+	
+	MyThings[1].WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), MyThings[1].WorldMatrix);
+
+	Mycam.SetWorldMatrix(MyThings[1].WorldMatrix);
+	D3D11_MAPPED_SUBRESOURCE Spidey;
+	ZeroMemory(&Spidey, sizeof(Spidey));
+	DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &Spidey);
+	memcpy(Spidey.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
+	DxDeviceContext->Unmap(ConstBuffer, NULL);
+
+	DxDeviceContext->VSSetConstantBuffers(1, 1, &ConstBuffer);
+
+	unsigned int pStrides2 = sizeof(Send_To_VRAM);
+	unsigned int pOffset2 = 0;
+	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer2, &pStrides2, &pOffset2);
+
+	//DxDeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	DxDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	DxDeviceContext->Draw(index2.size(), 0);
+#pragma endregion 
+
 	DxSwapChain->Present(0, 0);
+
 	return true;
 }
 
@@ -397,11 +485,14 @@ void DxInit::Release()
 	DxDeviceDepthStencil->Release();
 
 	VertexBuffer->Release();
+	VertexBuffer2->Release();
 	IndexBuffer->Release();
 
 	DxSampler->Release();
 	DxShaderResourceView->Release();
-//	DxShaderResourceView2->Release();
+	DxShaderResourceView2->Release();
+
+	//DxRasterState->Release();
 
 	UnregisterClass(L"DirectXApplication", application);
 }

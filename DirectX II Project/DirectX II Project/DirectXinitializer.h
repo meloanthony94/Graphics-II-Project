@@ -1,7 +1,8 @@
+#pragma once
 #include "Defines.h"
 #include "Camera.h"
 #include "Object.h"
-#include "DDSTextureLoader.h"
+#include "ThreadTexture.h"
 
 class DxInit
 {
@@ -33,11 +34,15 @@ class DxInit
 	ID3D11Texture2D* DxDeviceDepthStencil = NULL;
 	
 	ID3D11Buffer * VertexBuffer;
+	ID3D11Buffer * VertexBuffer2;
 	ID3D11Buffer * IndexBuffer;
+	ID3D11Buffer * IndexBuffer2;
 	
 	ID3D11SamplerState * DxSampler;
 	ID3D11ShaderResourceView * DxShaderResourceView;
 	ID3D11ShaderResourceView * DxShaderResourceView2;
+
+	ID3D11RasterizerState * DxRasterState;
 	
 	unsigned int DxVertCount;
 
@@ -45,10 +50,14 @@ class DxInit
 	XTime MrTimer;
 	Object Model;
 
+	///
 	vector< Send_To_VRAM > vertices;
 	vector< XMFLOAT2 > uvs;
 	vector< XMFLOAT3 > normals;
 	vector< unsigned int > index;
+	vector< unsigned int > index2;
+
+	vector<Thingys> MyThings;
 
 	Vertex *Star;
 
@@ -71,6 +80,7 @@ public:
 	void InitInputLayouts();
 	void InitConstBuffers();
 	void InitShaders();
+	void InitRasterizer();
 
 	bool Run();
 	void Resize();

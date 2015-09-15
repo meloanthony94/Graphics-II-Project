@@ -164,6 +164,7 @@
     <ClCompile Include="DirectXinitializer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="ThreadTexture.cpp" />
     <ClCompile Include="XTime.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -174,6 +175,7 @@
     <ClInclude Include="Defines.h" />
     <ClInclude Include="DirectXinitializer.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="ThreadTexture.h" />
     <ClInclude Include="XTime.h" />
   </ItemGroup>
   <ItemGroup>

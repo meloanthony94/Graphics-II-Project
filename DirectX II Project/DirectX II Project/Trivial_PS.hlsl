@@ -17,15 +17,26 @@ SamplerState filter : register(s0);
 
 float4 main(P_IN modulate) : SV_TARGET
 {
+	//direction lighting
+	float3 glightDir = {1, 1, 1};
+
+	//float3 ldir = -normalize(glightDir);
+	float3 ldir = -normalize(glightDir);
+	float3 wnrm = normalize(modulate.norm);
+
+	float LightRatio = clamp(dot(-ldir, wnrm), 0, 1);
+	LightRatio *= 0.99f;
+
+		//MultiTexturing
 	float4 baseColor = baseTexture.Sample(filter, modulate.UV.xy);
 	float4 newColor = SecondTexture.Sample(filter, modulate.UV.xy);
+	
+	float4 Final = baseColor * newColor;
+	
+	//Directional Light
+	float4 ambientColor = { 1, 1, 1, 1 };
+	
+	return (LightRatio * ambientColor * Final) + 0.01f;
 
-	float4 Final = baseColor;// *newColor;
-	//float4 col;
-	//col.a = baseColor.b;
-	//col.r = baseColor.g;
-	//col.g = baseColor.r;
-	//col.b = baseColor.a;
-
-	return baseColor;
+	//return Final;
 }

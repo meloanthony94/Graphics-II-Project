@@ -1,6 +1,7 @@
 #pragma once
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include "DDSTextureLoader.h"
 
 #pragma comment(lib, "d3d11.lib")
 
@@ -10,6 +11,7 @@
 #include <iostream>
 #include <ctime>
 #include "XTime.h"
+#include <thread>
 #include <vector>
 
 using namespace std;
@@ -42,4 +44,17 @@ struct Vertex
 	unsigned int MrColor;
 	float U;
 	float V;
+};
+
+struct TexutreThread
+{
+	ID3D11Device ** ThreadDevice;
+	ID3D11ShaderResourceView ** ThreadSRV;
+};
+
+struct Thingys
+{
+	XMMATRIX WorldMatrix;
+	XMFLOAT3 Pos;
+	XMFLOAT3 Rotation;
 };
