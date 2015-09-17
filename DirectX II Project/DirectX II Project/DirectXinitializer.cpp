@@ -331,7 +331,7 @@ bool DxInit::Run()
 	//
 	//Mycam.SetMatrix(world, 1);
 	//
-Mycam.CameraTranslation();
+	Mycam.CameraTranslation();
 	Mycam.CameraRotation();
 	////////
 

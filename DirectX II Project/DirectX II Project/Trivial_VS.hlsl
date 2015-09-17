@@ -14,6 +14,7 @@ struct OUTPUT_VERTEX
 	float4 color : COLOR;
 	float2 UV : UVCOORD;
 	float3 norm : NORMAL;
+	float3 Wpos : WORLDPOS;
 };
 
 // TODO: PART 3 STEP 2a
@@ -41,6 +42,7 @@ OUTPUT_VERTEX main(INPUT_VERTEX fromVertexBuffer)
 	float4 newVertex = float4(fromVertexBuffer.coordinate, 1);
 
 	newVertex = mul(newVertex, WorldMatrix);
+	output.Wpos = newVertex.xyz;
 	newVertex = mul(newVertex, ViewMatrix);
 	newVertex = mul(newVertex, ProjectionMatrix);
    
@@ -49,7 +51,7 @@ OUTPUT_VERTEX main(INPUT_VERTEX fromVertexBuffer)
 	output.UV = fromVertexBuffer.UV;
 	output.UV.y = 1 - fromVertexBuffer.UV.y;
 
-	output.norm = fromVertexBuffer.norm;
-	output.norm.y = 1 - output.norm.y;
+	output.norm = mul(float4(fromVertexBuffer.norm,0), WorldMatrix).xyz;
+	//output.norm.y = 1 - output.norm.y;
 	return output;
 }
