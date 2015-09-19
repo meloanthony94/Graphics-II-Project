@@ -19,6 +19,8 @@ class DxInit
 	DXGI_SWAP_CHAIN_DESC			SwapDescrip;
 	
 	D3D11_VIEWPORT					DxViewPort;
+	D3D11_VIEWPORT					DxViewPort2;
+
 	ID3D11Texture2D *			    Dx2DTexture;
 	
 	ID3D11Buffer * DxBuffer;

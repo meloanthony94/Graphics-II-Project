@@ -32,7 +32,7 @@ void DxInit::CreateMyWindow(HINSTANCE hinst, WNDPROC proc)
 void DxInit::Initalize()
 {
 	InitSwapChain(window, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT);
-	InitViewPort(0, 1, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, 1);
+	InitViewPort(0, 1, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT, 2);
 
 	InitRasterizer();
 
@@ -105,7 +105,14 @@ void DxInit::InitViewPort(float minDepth, float maxDepth, float width, float hei
 	DxViewPort.MaxDepth = maxDepth;
 	DxViewPort.Width = width;
 	DxViewPort.Height = height;
-	DxDeviceContext->RSSetViewports(NumOfViewPorts, &DxViewPort);
+	DxDeviceContext->RSSetViewports(0, &DxViewPort);
+
+	ZeroMemory(&DxViewPort2, sizeof(D3D11_VIEWPORT));
+	DxViewPort2.MinDepth = minDepth;
+	DxViewPort2.MaxDepth = maxDepth;
+	DxViewPort2.Width = width / 4;
+	DxViewPort2.Height = height / 4;
+	DxDeviceContext->RSSetViewports(1, &DxViewPort2);
 }
 
 void DxInit::InitVertexBuffers()
@@ -325,22 +332,12 @@ bool DxInit::Run()
 	////
 
 	///////
-	//MatrixTrio world;
-	//world.WorldMatrix = XMMatrixIdentity();
-	//world.WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), Mycam.GetMatrix().WorldMatrix);
-	//
-	//Mycam.SetMatrix(world, 1);
-	//
 	Mycam.CameraTranslation();
 	Mycam.CameraRotation();
 	////////
 
 	///////
 	DxDeviceContext->OMSetRenderTargets(1, &DxRenderTargetView, DxStencilView);
-	/////
-
-	/////
-	DxDeviceContext->RSSetViewports(1, &DxViewPort);
 	/////
 
 	/////
@@ -370,14 +367,6 @@ bool DxInit::Run()
 	DxDeviceContext->VSSetConstantBuffers(1, 1, &ConstBuffer);
 	//////
 
-	//////
-	unsigned int pStrides = sizeof(Send_To_VRAM);
-	unsigned int pOffset = 0;
-	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &pStrides, &pOffset);
-
-	DxDeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	//////////
-
 	///////
 	DxDeviceContext->VSSetShader(DxVertexShader, 0, 0);
 	DxDeviceContext->PSSetShader(DxPixelShader, 0, 0);
@@ -387,13 +376,27 @@ bool DxInit::Run()
 	DxDeviceContext->IASetInputLayout(layout);
 	/////
 
+	/////
+	DxDeviceContext->PSSetSamplers(0, 1, &DxSampler);
+	/////
+
+
+#pragma region Cube
+
+	/////
+	DxDeviceContext->RSSetViewports(1, &DxViewPort);
+	/////
+
+	//////
+	unsigned int pStrides = sizeof(Send_To_VRAM);
+	unsigned int pOffset = 0;
+	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &pStrides, &pOffset);
+
+	DxDeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	//////////
 
 	/////
 	DxDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	/////
-
-	/////
-	DxDeviceContext->PSSetSamplers(0, 1, &DxSampler);
 	/////
 
 	/////
@@ -404,6 +407,9 @@ bool DxInit::Run()
 	/////
 	DxDeviceContext->DrawIndexed(index.size(), 0, 0);
 	/////
+
+#pragma endregion
+
 
 #pragma region SpiderMan	
 	MyThings[1].WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), MyThings[1].WorldMatrix);
@@ -427,6 +433,58 @@ bool DxInit::Run()
 
 	DxDeviceContext->Draw(index2.size(), 0);
 #pragma endregion 
+
+
+#pragma region Cube View 2
+
+	/////
+	DxDeviceContext->RSSetViewports(1, &DxViewPort2);
+	/////
+
+	//////
+	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &pStrides, &pOffset);
+
+	DxDeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	//////////
+
+	/////
+	DxDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	/////
+
+	/////
+	DxDeviceContext->PSSetShaderResources(0, 1, &DxShaderResourceView);
+	DxDeviceContext->PSSetShaderResources(1, 1, &DxShaderResourceView2);
+	//////
+
+	/////
+	DxDeviceContext->DrawIndexed(index.size(), 0, 0);
+	/////
+
+#pragma endregion
+
+#pragma region SpiderMan View 2	
+	//MyThings[1].WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), MyThings[1].WorldMatrix);
+
+	//Mycam.SetWorldMatrix(MyThings[1].WorldMatrix);
+
+	//D3D11_MAPPED_SUBRESOURCE Spidey;
+	//ZeroMemory(&Spidey, sizeof(Spidey));
+	//DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &Spidey);
+	//memcpy(Spidey.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
+	//DxDeviceContext->Unmap(ConstBuffer, NULL);
+
+	DxDeviceContext->VSSetConstantBuffers(1, 1, &ConstBuffer);
+
+	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer2, &pStrides2, &pOffset2);
+
+	//DxDeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	DxDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DxDeviceContext->RSSetViewports(1, &DxViewPort2);
+
+	DxDeviceContext->Draw(index2.size(), 0);
+#pragma endregion 
+
 
 	DxDeviceContext->RSSetState(DxRasterState);
 

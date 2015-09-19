@@ -331,6 +331,7 @@ void Object::CreateStar(vector<Send_To_VRAM> & me, vector<unsigned int> * indici
 
 Send_To_VRAM insert;
 
+//0
 insert.Position.x = -0.25f;
 insert.Position.y = -0.25f;
 insert.Position.z = -0.25f;
@@ -338,6 +339,7 @@ insert.UV.x = 0;
 insert.UV.y = 1;
 me.push_back(insert);
 
+//1
 insert.Position.x = 0.25f;
 insert.Position.y = -0.25f;
 insert.Position.z = -0.25f;
@@ -345,6 +347,7 @@ insert.UV.x = 1;
 insert.UV.y = 1;
 me.push_back(insert);
 
+//2
 insert.Position.x = -0.25f;
 insert.Position.y = 0.25f;
 insert.Position.z = -0.25f;
@@ -352,6 +355,7 @@ insert.UV.x = 0;
 insert.UV.y = 0;
 me.push_back(insert);
 
+//3
 insert.Position.x = 0.25f;
 insert.Position.y = 0.25f;
 insert.Position.z = -0.25f;
@@ -359,7 +363,47 @@ insert.UV.x = 1;
 insert.UV.y = 0;
 me.push_back(insert);
 
-//Back of cube
+//4
+insert.Position.x = 0.25f;
+insert.Position.y = 0.25f;
+insert.Position.z = 0.25f;
+insert.UV.x = 1;
+insert.UV.y = 1;
+me.push_back(insert);
+
+//5
+insert.Position.x = 0.25f;
+insert.Position.y = -0.25f;
+insert.Position.z = -0.25f;
+insert.UV.x = 0;
+insert.UV.y = 0;
+me.push_back(insert);
+
+//6
+insert.Position.x = 0.25f;
+insert.Position.y = 0.25f;
+insert.Position.z = -0.25f;
+insert.UV.x = 0;
+insert.UV.y = 1;
+me.push_back(insert);
+
+//7
+insert.Position.x = 0.25f;
+insert.Position.y = -0.25f;
+insert.Position.z = 0.25f;
+insert.UV.x = 1;
+insert.UV.y = 0;
+me.push_back(insert);
+
+//8
+insert.Position.x = -0.25f;
+insert.Position.y = -0.25f;
+insert.Position.z = -0.25f;
+insert.UV.x = 1;
+insert.UV.y = 1;
+me.push_back(insert);
+
+//9
 insert.Position.x = -0.25f;
 insert.Position.y = -0.25f;
 insert.Position.z = 0.25f;
@@ -367,13 +411,7 @@ insert.UV.x = 0;
 insert.UV.y = 1;
 me.push_back(insert);
 
-insert.Position.x = 0.25f;
-insert.Position.y = -0.25f;
-insert.Position.z = 0.25f;
-insert.UV.x = 1;
-insert.UV.y = 1;
-me.push_back(insert);
-
+//10
 insert.Position.x = -0.25f;
 insert.Position.y = 0.25f;
 insert.Position.z = 0.25f;
@@ -381,9 +419,106 @@ insert.UV.x = 0;
 insert.UV.y = 0;
 me.push_back(insert);
 
+//11
+insert.Position.x = -0.25f;
+insert.Position.y = 0.25f;
+insert.Position.z = -0.25f;
+insert.UV.x = 1;
+insert.UV.y = 0;
+me.push_back(insert);
+
+//12
+insert.Position.x = -0.25f;
+insert.Position.y = 0.25f;
+insert.Position.z = 0.25f;
+insert.UV.x = 1;
+insert.UV.y = 0;
+me.push_back(insert);
+
+//13
+insert.Position.x = -0.25f;
+insert.Position.y = -0.25f;
+insert.Position.z = 0.25f;
+insert.UV.x = 1;
+insert.UV.y = 1;
+me.push_back(insert);
+
+//14
 insert.Position.x = 0.25f;
 insert.Position.y = 0.25f;
 insert.Position.z = 0.25f;
+insert.UV.x = 0;
+insert.UV.y = 0;
+me.push_back(insert);
+
+//15
+insert.Position.x = 0.25f;
+insert.Position.y = -0.25f;
+insert.Position.z = 0.25f;
+insert.UV.x = 0;
+insert.UV.y = 1;
+me.push_back(insert);
+
+//16
+insert.Position.x = -0.25f;
+insert.Position.y = 0.25f;
+insert.Position.z = 0.25f;
+insert.UV.x = 0;
+insert.UV.y = 0;
+me.push_back(insert);
+
+//17
+insert.Position.x = 0.25f;
+insert.Position.y = 0.25f;
+insert.Position.z = 0.25f;
+insert.UV.x = 1;
+insert.UV.y = 0;
+me.push_back(insert);
+
+//18
+insert.Position.x = -0.25f;
+insert.Position.y = 0.25f;
+insert.Position.z = -0.25f;
+insert.UV.x = 0;
+insert.UV.y = 1;
+me.push_back(insert);
+
+//19
+insert.Position.x = 0.25f;
+insert.Position.y = 0.25f;
+insert.Position.z = -0.25f;
+insert.UV.x = 1;
+insert.UV.y = 1;
+me.push_back(insert);
+
+//20
+insert.Position.x = -0.25f;
+insert.Position.y = -0.25f;
+insert.Position.z = 0.25f;
+insert.UV.x = 0;
+insert.UV.y = 1;
+me.push_back(insert);
+
+//21
+insert.Position.x = -0.25f;
+insert.Position.y = -0.25f;
+insert.Position.z = -0.25f;
+insert.UV.x = 0;
+insert.UV.y = 0;
+me.push_back(insert);
+
+//22
+insert.Position.x = 0.25f;
+insert.Position.y = -0.25f;
+insert.Position.z = 0.25f;
+insert.UV.x = 1;
+insert.UV.y = 1;
+me.push_back(insert);
+
+//23
+insert.Position.x = 0.25f;
+insert.Position.y = -0.25f;
+insert.Position.z = -0.25f;
 insert.UV.x = 1;
 insert.UV.y = 0;
 me.push_back(insert);
@@ -397,49 +532,45 @@ me.push_back(insert);
 	indicies->push_back(1);
 	indicies->push_back(0);
 
-	indicies->push_back(3);
-	indicies->push_back(7);
-	indicies->push_back(5);
-
-	indicies->push_back(3);
-	indicies->push_back(5);
-	indicies->push_back(1);
-
-	indicies->push_back(6);
-	indicies->push_back(2);
-	indicies->push_back(0);
-
-	indicies->push_back(6);
-	indicies->push_back(0);
-	indicies->push_back(4);
-
-	indicies->push_back(7);
-	indicies->push_back(6);
-	indicies->push_back(4);
-
-	indicies->push_back(7);
 	indicies->push_back(4);
 	indicies->push_back(5);
+	indicies->push_back(6);
 
 	indicies->push_back(7);
-	indicies->push_back(4);
-	indicies->push_back(5);
-
-	indicies->push_back(6);
-	indicies->push_back(7);
-	indicies->push_back(3);
-
-	indicies->push_back(6);
-	indicies->push_back(3);
-	indicies->push_back(2);
-
-	indicies->push_back(0);
-	indicies->push_back(1);
-	indicies->push_back(5);
-
-	indicies->push_back(0);
 	indicies->push_back(5);
 	indicies->push_back(4);
+
+	indicies->push_back(10);
+	indicies->push_back(11);
+	indicies->push_back(8);
+
+	indicies->push_back(10);
+	indicies->push_back(8);
+	indicies->push_back(9);
+
+	indicies->push_back(14);
+	indicies->push_back(12);
+	indicies->push_back(13);
+	
+	indicies->push_back(14);
+	indicies->push_back(13);
+	indicies->push_back(15);
+	
+	indicies->push_back(16);
+	indicies->push_back(17);
+	indicies->push_back(19);
+	
+	indicies->push_back(16);
+	indicies->push_back(19);
+	indicies->push_back(18);
+	
+	indicies->push_back(21);
+	indicies->push_back(23);
+	indicies->push_back(22);
+	
+	indicies->push_back(21);
+	indicies->push_back(22);
+	indicies->push_back(20);
 }
 
 bool Object::LoadObject(char * path, vector< Send_To_VRAM > *out_vertices, vector< XMFLOAT2 > *out_uvs, vector< XMFLOAT3 > *out_normals, vector< unsigned int > *indicies)
