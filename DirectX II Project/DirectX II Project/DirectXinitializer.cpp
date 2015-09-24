@@ -21,7 +21,7 @@ void DxInit::CreateMyWindow(HINSTANCE hinst, WNDPROC proc)
 	RECT window_size = { 0, 0, BACKBUFFER_WIDTH, BACKBUFFER_HEIGHT };
 	AdjustWindowRect(&window_size, WS_OVERLAPPEDWINDOW, false);
 
-	window = CreateWindow(L"DirectXApplication", L"Graphics II Project", WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_MAXIMIZEBOX),
+	window = CreateWindow(L"DirectXApplication", L"Graphics II Project", WS_OVERLAPPEDWINDOW /*& ~(WS_THICKFRAME | WS_MAXIMIZEBOX)*/,
 		CW_USEDEFAULT, CW_USEDEFAULT, window_size.right - window_size.left, window_size.bottom - window_size.top,
 		NULL, NULL, application, NULL);
 
@@ -53,6 +53,13 @@ void DxInit::Initalize()
 	InitInputLayouts();
 
 	InitConstBuffers();
+
+	InitLightBuffer();
+
+	//Create Camera
+	myCamera.Pos = { 0, 0, 2 };
+	myCamera.Rotation = { 0, 0, 0 };
+	myCamera.WorldMatrix = XMMatrixIdentity();
 }
 
 void DxInit::InitSwapChain(HWND window, int width, int height)
@@ -118,7 +125,9 @@ void DxInit::InitViewPort(float minDepth, float maxDepth, float width, float hei
 void DxInit::InitVertexBuffers()
 {
 	vector<Send_To_VRAM> Cube;
-	Model.CreateStar(Cube, &index);
+	//Model.CreateStar(Cube, &index);
+	Model.CreateCubeReversed(Cube, &index);
+	//Model.LoadObject("MyCube.obj", &Cube, &uvs, &normals, &index);
 	
 	D3D11_BUFFER_DESC VertexBuffDescript;
 	ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
@@ -131,8 +140,9 @@ void DxInit::InitVertexBuffers()
 	VertexData.pSysMem = &Cube[0];
 	
 	DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer);
-	InitIndexBuffers();
+	IndexBuffer = InitIndexBuffers(IndexBuffer, index);
 
+#pragma region Load Spiderman
 	//.obj
 	Model.LoadObject("Spider-Man_Scarlet_Spider.obj", &vertices, &uvs, &normals, &index2);
 
@@ -149,50 +159,112 @@ void DxInit::InitVertexBuffers()
 	
 	DxDevice->CreateBuffer(&VertexBuffDescript2, &VertexData2, &VertexBuffer2);
 	//InitIndexBuffers();
+#pragma endregion
 
+#pragma region Load Floor
+	//.obj
+	//Model.CreateStar(Cube, &index4);
+	//
+	//ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
+	//VertexBuffDescript.ByteWidth = (unsigned int)(sizeof(Send_To_VRAM) * Cube.size());
+	//VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	//VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
+	//VertexBuffDescript.StructureByteStride = sizeof(Send_To_VRAM);
+	//
+	//ZeroMemory(&VertexData, sizeof(VertexData));
+	//VertexData.pSysMem = &Cube[0];
+	//
+	//DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer3);
+	//IndexBuffer2 = InitIndexBuffers(IndexBuffer2, index4);
+#pragma endregion
+
+#pragma region Load Building
+	//.obj
+	ZeroMemory(&vertices, sizeof(vertices));
+	Model.LoadObject("building.obj", &vertices, &uvs, &normals, &index3);
+
+	ZeroMemory(&VertexBuffDescript, sizeof(VertexBuffDescript));
+	VertexBuffDescript.ByteWidth = (unsigned int)(sizeof(Send_To_VRAM) * vertices.size());
+	VertexBuffDescript.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	VertexBuffDescript.Usage = D3D11_USAGE_IMMUTABLE;
+	VertexBuffDescript.StructureByteStride = sizeof(Send_To_VRAM);
+
+	ZeroMemory(&VertexData, sizeof(VertexData));
+	VertexData.pSysMem = &vertices[0];
+
+	DxDevice->CreateBuffer(&VertexBuffDescript, &VertexData, &VertexBuffer3);
+	//InitIndexBuffers();
+#pragma endregion
 
 	Thingys TempThingy;
 	/////////////////////
-	MatrixTrio CubeMatrix;
-	CubeMatrix.WorldMatrix;
-
-	TempThingy.Pos = { 0.5, 0, 0 };
+	TempThingy.Pos = { 0, 0, 0 };
 	TempThingy.Rotation = { 0, 0, 0 };
 
 	TempThingy.WorldMatrix = XMMatrixMultiply(XMMatrixRotationRollPitchYaw(TempThingy.Rotation.x, TempThingy.Rotation.y, TempThingy.Rotation.z),
 							XMMatrixTranslation(TempThingy.Pos.x, TempThingy.Pos.y, TempThingy.Pos.z));
 
+	TempThingy.WorldMatrix = XMMatrixScaling(64, 64, 64);
 
 	MyThings.push_back(TempThingy);
 	/////////////////////////////////
-	MatrixTrio SpideyMatrix;
-	SpideyMatrix.WorldMatrix;
-
-	TempThingy.Pos = { 1, -2, 0 };
+	TempThingy.Pos = { 0, 0, 0 };
 	TempThingy.Rotation = { 0, /*XMConvertToRadians(180.0f)*/0, 0 };
 
-	TempThingy.WorldMatrix = XMMatrixMultiply(XMMatrixRotationRollPitchYaw(TempThingy.Rotation.x, TempThingy.Rotation.y, TempThingy.Rotation.z),
-												XMMatrixTranslation(TempThingy.Pos.x, TempThingy.Pos.y, TempThingy.Pos.z));
+	TempThingy.WorldMatrix = XMMatrixIdentity();
 
-	TempThingy.WorldMatrix = XMMatrixScaling(0.5,0.5,0.5);
+	TempThingy.WorldMatrix = XMMatrixScaling(0.25,0.25,0.25);
 	MyThings.push_back(TempThingy);
-	////////////////////////
+	//////////////////////// Floor
+	TempThingy.Pos = { 0, 0, 0 };
+	TempThingy.Rotation = { 90, 0, 0 };
+
+	TempThingy.WorldMatrix = XMMatrixMultiply(XMMatrixRotationRollPitchYaw(TempThingy.Rotation.x, TempThingy.Rotation.y, TempThingy.Rotation.z),
+		XMMatrixTranslation(TempThingy.Pos.x, TempThingy.Pos.y, TempThingy.Pos.z));
+
+	TempThingy.WorldMatrix = XMMatrixScaling(30, 0.1, 30);
+
+	MyThings.push_back(TempThingy);
+	///// Building
+	TempThingy.Pos = { 8, 13.9f, -35 };
+	TempThingy.Rotation = { 0, 0, 0 };
+
+	TempThingy.WorldMatrix = XMMatrixMultiply(XMMatrixRotationRollPitchYaw(TempThingy.Rotation.x, TempThingy.Rotation.y, TempThingy.Rotation.z),
+		XMMatrixTranslation(TempThingy.Pos.x, TempThingy.Pos.y, TempThingy.Pos.z));
+
+	TempThingy.WorldMatrix = XMMatrixMultiply(TempThingy.WorldMatrix, XMMatrixScaling(0.7, 0.7, 0.7));
+
+	MyThings.push_back(TempThingy);
 }
 
-void DxInit::InitIndexBuffers()
+ID3D11Buffer * DxInit::InitIndexBuffers(ID3D11Buffer * buffer, vector< unsigned int > indicies)
 {
 	D3D11_BUFFER_DESC IndexBuffDesc;
 	ZeroMemory(&IndexBuffDesc, sizeof(IndexBuffDesc));
 	IndexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
 	IndexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	IndexBuffDesc.CPUAccessFlags = NULL;
-	IndexBuffDesc.ByteWidth = sizeof(unsigned int) * index.size();
+	IndexBuffDesc.ByteWidth = sizeof(unsigned int) * indicies.size();
 	
 	D3D11_SUBRESOURCE_DATA IndexData;
 	ZeroMemory(&IndexData, sizeof(IndexData));
-	IndexData.pSysMem = &index[0];
+	IndexData.pSysMem = &indicies[0];
 	
-	DxDevice->CreateBuffer(&IndexBuffDesc, &IndexData, &IndexBuffer);
+	DxDevice->CreateBuffer(&IndexBuffDesc, &IndexData, &buffer);
+	return buffer;
+}
+
+void DxInit::InitLightBuffer()
+{
+	D3D11_BUFFER_DESC LightBuffDescript;
+	ZeroMemory(&LightBuffDescript, sizeof(LightBuffDescript));
+	LightBuffDescript.ByteWidth = sizeof(LIGHTS);
+	LightBuffDescript.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//ConstBuffDescript.StructureByteStride = sizeof(MatrixTrio);
+	LightBuffDescript.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	LightBuffDescript.Usage = D3D11_USAGE_DYNAMIC;
+
+	DxDevice->CreateBuffer(&LightBuffDescript, NULL, &LightsBuffer);
 }
 
 void DxInit::InitTextures()
@@ -219,6 +291,8 @@ void DxInit::InitTextures()
 	//DxDevice->CreateTexture2D(&DxTextureDesc, DxTextureData, &Dx2DTexture);
 
 	CreateDDSTextureFromFile(DxDevice, L"Scarlet_Spiderman_D.dds", NULL, &DxShaderResourceView);
+	CreateDDSTextureFromFile(DxDevice, L"SunsetSkybox.dds", NULL, &DxShaderResourceViewSKY);
+	CreateDDSTextureFromFile(DxDevice, L"pavement_seamless.dds", NULL, &DxShaderResourceViewFloor);
 
 	//Create other texture in another thread
 	TexutreThread ThreadTexture;
@@ -297,7 +371,7 @@ void DxInit::InitInputLayouts()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "UVCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		//{ "INSTANCE", 0, DXGI_FORMAT_R32G32B32_OFLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
@@ -315,27 +389,93 @@ void DxInit::InitConstBuffers()
 	ConstBuffDescript.Usage = D3D11_USAGE_DYNAMIC;
 
 	DxDevice->CreateBuffer(&ConstBuffDescript, NULL, &ConstBuffer);
-}
 
+	///////////////
+
+
+	XMMATRIX ID[2];
+	ID[0] = MyThings[3].WorldMatrix;
+	ID[1] = XMMatrixMultiply(MyThings[3].WorldMatrix, XMMatrixTranslation(-10,0,0));
+
+	memcpy_s(instance.NewOne, sizeof(XMMATRIX) * 2, ID, sizeof(XMMATRIX) * 2);
+
+	D3D11_BUFFER_DESC NewGuyBuffer;
+	ZeroMemory(&NewGuyBuffer, sizeof(NewGuyBuffer));
+	NewGuyBuffer.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	NewGuyBuffer.ByteWidth = sizeof(NewGuys);
+	NewGuyBuffer.Usage = D3D11_USAGE_DYNAMIC;
+	NewGuyBuffer.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	D3D11_SUBRESOURCE_DATA NewGuyData;
+	ZeroMemory(&NewGuyData, sizeof(NewGuyData));
+	NewGuyData.pSysMem = &instance;
+
+	DxDevice->CreateBuffer(&NewGuyBuffer, &NewGuyData, &ConstBufferInstance);
+}
+ 
 void DxInit::InitShaders()
 {
 	DxDevice->CreateVertexShader(Trivial_VS, sizeof(Trivial_VS), NULL, &DxVertexShader);
+	DxDevice->CreateVertexShader(VertexShaderInstance, sizeof(VertexShaderInstance), NULL, &DxVertexShaderInstance);
 	DxDevice->CreatePixelShader(Trivial_PS, sizeof(Trivial_PS), NULL, &DxPixelShader);
+	DxDevice->CreatePixelShader(PixelShader, sizeof(PixelShader), NULL, &DxSkyPixelShader);
 }
 
 bool DxInit::Run()
 {
+
+	DxDeviceContext->RSSetState(DxRasterState);
+
 	////
 	MrTimer.Signal();
-	if (MrTimer.TotalTime() > 360)
-		MrTimer.Restart();
+	//if (MrTimer.TotalTime() > 360)
+	//	MrTimer.Restart();
 	////
 
 	///////
-	Mycam.CameraTranslation();
-	Mycam.CameraRotation();
+#pragma region Camera
+
+	if (GetAsyncKeyState(VK_DOWN))
+		myCamera.Pos.z += 0.8f * MrTimer.Delta();
+	else if (GetAsyncKeyState(VK_UP))
+		myCamera.Pos.z -= 0.8f * MrTimer.Delta();
+	if (GetAsyncKeyState(VK_LEFT))
+		myCamera.Pos.x += 0.8f * MrTimer.Delta();
+	else if (GetAsyncKeyState(VK_RIGHT))
+		myCamera.Pos.x -= 0.8f * MrTimer.Delta();
+	if (GetAsyncKeyState(VK_SPACE))
+		myCamera.Pos.y -= 0.8f * MrTimer.Delta();
+	else if (GetAsyncKeyState(VK_SHIFT))
+		myCamera.Pos.y += 0.8f * MrTimer.Delta();
+
+	if (GetAsyncKeyState(VK_NUMPAD8) & 1)
+		myCamera.Rotation.x += 100 * MrTimer.Delta();
+	else if (GetAsyncKeyState(VK_NUMPAD5) & 1)
+		myCamera.Rotation.x -= 100 * MrTimer.Delta();
+	if (GetAsyncKeyState(VK_NUMPAD4) & 1)
+		myCamera.Rotation.y -= 100 * MrTimer.Delta();
+	else if (GetAsyncKeyState(VK_NUMPAD6) & 1)
+		myCamera.Rotation.y += 100 * MrTimer.Delta();
+	//else if (GetAsyncKeyState(VK_NUMPAD7) & 1)
+	//	Matricies.ViewMatrix = XMMatrixMultiply(Matricies.ViewMatrix, XMMatrixRotationZ(0.1f));
+	//else if (GetAsyncKeyState(VK_NUMPAD9) & 1)
+	//	Matricies.ViewMatrix = XMMatrixMultiply(Matricies.ViewMatrix, XMMatrixRotationZ(-0.1f));
+	//Mycam.CameraTranslation();
+	//Mycam.CameraRotation();
+	myCamera.WorldMatrix = XMMatrixMultiply(XMMatrixTranslation(myCamera.Pos.x, myCamera.Pos.y, myCamera.Pos.z),
+		XMMatrixRotationRollPitchYaw(myCamera.Rotation.x, myCamera.Rotation.y, myCamera.Rotation.z)
+		);
+
+
+	Mycam.SetViewMatrix(myCamera.WorldMatrix);
+	D3D11_MAPPED_SUBRESOURCE View;
+	ZeroMemory(&View, sizeof(View));
+	DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &View);
+	memcpy(View.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
+	DxDeviceContext->Unmap(ConstBuffer, NULL);
 	////////
 
+#pragma endregion
 	///////
 	DxDeviceContext->OMSetRenderTargets(1, &DxRenderTargetView, DxStencilView);
 	/////
@@ -346,14 +486,32 @@ bool DxInit::Run()
 	DxDeviceContext->ClearRenderTargetView(DxRenderTargetView, Color);
 	DxDeviceContext->ClearDepthStencilView(DxStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	/////
-	MyThings[0].WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), MyThings[0].WorldMatrix);
-	Mycam.SetWorldMatrix(MyThings[0].WorldMatrix);
-	D3D11_MAPPED_SUBRESOURCE Cube;
-	ZeroMemory(&Cube, sizeof(Cube));
-	DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &Cube);
-	memcpy(Cube.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
-	DxDeviceContext->Unmap(ConstBuffer, NULL);
+#pragma region Lights
+	if (GetAsyncKeyState(VK_RETURN) & 1)
+		SpotLight = !SpotLight;
+
+	MyLights.dir = lighting.DirectionalLight();
+	MyLights.point = lighting.PointLight();
+	if (SpotLight)
+	{
+		MyLights.SpotPos.x = -myCamera.Pos.x;
+		MyLights.SpotPos.y = -myCamera.Pos.y;
+		MyLights.SpotPos.z = -myCamera.Pos.z;
+		XMVECTOR forward = { 0, 0, 1 };
+		forward = XMVector3Transform(forward, XMMatrixInverse(NULL, XMMatrixRotationRollPitchYaw(myCamera.Rotation.x, myCamera.Rotation.y, myCamera.Rotation.z)));
+		MyLights.SpotDir.x = forward.m128_f32[0];
+		MyLights.SpotDir.y = forward.m128_f32[1];
+		MyLights.SpotDir.z = forward.m128_f32[2];
+	}
+	else
+		MyLights.SpotPos = { 0, 0, 0 };
+
+	D3D11_MAPPED_SUBRESOURCE Lights;
+	ZeroMemory(&Lights, sizeof(Lights));
+	DxDeviceContext->Map(LightsBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &Lights);
+	memcpy(Lights.pData, &MyLights, sizeof(MyLights));
+	DxDeviceContext->Unmap(LightsBuffer, NULL);
+#pragma endregion
 
 	/////
 	//D3D11_MAPPED_SUBRESOURCE  RotateSub;
@@ -365,11 +523,11 @@ bool DxInit::Run()
 
 	/////
 	DxDeviceContext->VSSetConstantBuffers(1, 1, &ConstBuffer);
+	DxDeviceContext->VSSetConstantBuffers(2, 1, &LightsBuffer);
 	//////
 
 	///////
 	DxDeviceContext->VSSetShader(DxVertexShader, 0, 0);
-	DxDeviceContext->PSSetShader(DxPixelShader, 0, 0);
 	///////
 
 	//////
@@ -380,9 +538,7 @@ bool DxInit::Run()
 	DxDeviceContext->PSSetSamplers(0, 1, &DxSampler);
 	/////
 
-
-#pragma region Cube
-
+#pragma region SkyBox
 	/////
 	DxDeviceContext->RSSetViewports(1, &DxViewPort);
 	/////
@@ -400,18 +556,76 @@ bool DxInit::Run()
 	/////
 
 	/////
-	DxDeviceContext->PSSetShaderResources(0, 1, &DxShaderResourceView);
-	DxDeviceContext->PSSetShaderResources(1, 1, &DxShaderResourceView2);
+	DxDeviceContext->PSSetShaderResources(2, 1, &DxShaderResourceViewSKY);
 	//////
+
+	//
+	DxDeviceContext->PSSetShader(DxSkyPixelShader, 0, 0);
+	//
+
+
+	/////Sky Box
+	MyThings[0].Pos.x = -myCamera.Pos.x;
+	MyThings[0].Pos.y = -myCamera.Pos.y;
+	MyThings[0].Pos.z = -myCamera.Pos.z;
+	MyThings[0].WorldMatrix = XMMatrixMultiply(XMMatrixRotationRollPitchYaw(MyThings[0].Rotation.x, MyThings[0].Rotation.y, MyThings[0].Rotation.z),
+		XMMatrixTranslation(MyThings[0].Pos.x, MyThings[0].Pos.y, MyThings[0].Pos.z));
+
+	Mycam.SetWorldMatrix(MyThings[0].WorldMatrix);
+	D3D11_MAPPED_SUBRESOURCE Cube;
+	ZeroMemory(&Cube, sizeof(Cube));
+	DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &Cube);
+	memcpy(Cube.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
+	DxDeviceContext->Unmap(ConstBuffer, NULL);
+	///////
 
 	/////
 	DxDeviceContext->DrawIndexed(index.size(), 0, 0);
 	/////
 
+	DxDeviceContext->ClearDepthStencilView(DxStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
 #pragma endregion
 
+	DxDeviceContext->PSSetShader(DxPixelShader, 0, 0);
+	DxDeviceContext->PSSetShaderResources(0, 1, &DxShaderResourceView2);
+	DxDeviceContext->PSSetShaderResources(1, 1, &DxShaderResourceView2);
 
-#pragma region SpiderMan	
+#pragma region Building
+
+	Mycam.SetWorldMatrix(MyThings[3].WorldMatrix);
+	D3D11_MAPPED_SUBRESOURCE Building;
+	ZeroMemory(&Building, sizeof(Building));
+	DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &Building);
+	memcpy(Building.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
+	DxDeviceContext->Unmap(ConstBuffer, NULL);
+
+	DxDeviceContext->VSSetConstantBuffers(1, 1, &ConstBuffer);
+
+	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer3, &pStrides, &pOffset);
+
+	//DxDeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	DxDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//Instance shitttt
+	DxDeviceContext->VSSetConstantBuffers(3, 1, &ConstBufferInstance);
+	DxDeviceContext->VSSetShader(DxVertexShaderInstance, NULL, 0);
+	
+	DxDeviceContext->DrawInstanced(index3.size(), 2, 0, 0);
+	//////////////
+
+	//DxDeviceContext->Draw(index3.size(), 0);
+#pragma endregion 
+
+	DxDeviceContext->VSSetConstantBuffers(1, 1, &ConstBuffer);
+	DxDeviceContext->VSSetShader(DxVertexShader, 0, 0);
+
+	DxDeviceContext->PSSetShaderResources(0, 1, &DxShaderResourceView);
+	DxDeviceContext->PSSetShaderResources(1, 1, &DxShaderResourceView);
+
+#pragma region SpiderMan
+
 	MyThings[1].WorldMatrix = XMMatrixMultiply(XMMatrixRotationY(XMConvertToDegrees((float)MrTimer.Delta() * 0.05f)), MyThings[1].WorldMatrix);
 
 	Mycam.SetWorldMatrix(MyThings[1].WorldMatrix);
@@ -431,12 +645,35 @@ bool DxInit::Run()
 
 	DxDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	DxDeviceContext->Draw(index2.size(), 0);
+	TexutreThread Spideythread;
+	Spideythread.ThreadContext = &DxDeviceContext;
+	std::thread m_thread(ThreadDrawSpidey, &Spideythread);
+	m_thread.join();
 #pragma endregion 
 
+	DxDeviceContext->PSSetShaderResources(0, 1, &DxShaderResourceViewFloor);
+	DxDeviceContext->PSSetShaderResources(1, 1, &DxShaderResourceViewFloor);
+
+#pragma region Floor
+	Mycam.SetWorldMatrix(MyThings[2].WorldMatrix);
+	D3D11_MAPPED_SUBRESOURCE Floor;
+	ZeroMemory(&Floor, sizeof(Floor));
+	DxDeviceContext->Map(ConstBuffer, NULL, D3D11_MAP::D3D11_MAP_WRITE_DISCARD, NULL, &Floor);
+	memcpy(Floor.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
+	DxDeviceContext->Unmap(ConstBuffer, NULL);
+
+	DxDeviceContext->VSSetConstantBuffers(1, 1, &ConstBuffer);
+
+	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer, &pStrides, &pOffset);
+
+	DxDeviceContext->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	DxDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	DxDeviceContext->DrawIndexed(index.size(), 0, 0);
+#pragma endregion 
 
 #pragma region Cube View 2
-
 	/////
 	DxDeviceContext->RSSetViewports(1, &DxViewPort2);
 	/////
@@ -458,6 +695,7 @@ bool DxInit::Run()
 
 	/////
 	DxDeviceContext->DrawIndexed(index.size(), 0, 0);
+	//DxDeviceContext->Draw(index.size(), 0);
 	/////
 
 #pragma endregion
@@ -473,6 +711,8 @@ bool DxInit::Run()
 	//memcpy(Spidey.pData, &Mycam.GetMatrix(), sizeof(Mycam.GetMatrix()));
 	//DxDeviceContext->Unmap(ConstBuffer, NULL);
 
+	DxDeviceContext->PSSetShader(DxPixelShader, 0, 0);
+
 	DxDeviceContext->VSSetConstantBuffers(1, 1, &ConstBuffer);
 
 	DxDeviceContext->IASetVertexBuffers(0, 1, &VertexBuffer2, &pStrides2, &pOffset2);
@@ -485,9 +725,6 @@ bool DxInit::Run()
 	DxDeviceContext->Draw(index2.size(), 0);
 #pragma endregion 
 
-
-	DxDeviceContext->RSSetState(DxRasterState);
-
 	DxSwapChain->Present(0, 0);
 
 	return true;
@@ -495,29 +732,68 @@ bool DxInit::Run()
 
 void DxInit::Resize()
 {
-	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-
 	if (Is_FullScreen)
-	{
-		DEVMODE dmScreenSettings;
-		memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
-		dmScreenSettings.dmSize = sizeof(dmScreenSettings);
-		dmScreenSettings.dmPelsWidth = (unsigned long)screenWidth;
-		dmScreenSettings.dmPelsHeight = (unsigned long)screenHeight;
-		dmScreenSettings.dmBitsPerPel = 32;
-		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-		ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN);
-	}
-	else
-	{
-		screenWidth = BACKBUFFER_WIDTH;
-		screenHeight = BACKBUFFER_HEIGHT;
-	}
+		{
+			BOOL Biggie = false;
+			DxSwapChain->GetFullscreenState(&Biggie, NULL);
+			DxSwapChain->SetFullscreenState(!Biggie, NULL);
+			Is_FullScreen = false;
+		}
 
-	int nStyle = WS_OVERLAPPED | WS_SYSMENU | WS_VISIBLE | WS_CAPTION | WS_MINIMIZEBOX;
+		if (DxSwapChain)
+		{
+			DxRenderTargetView->Release();
+			DxDeviceDepthStencil->Release();
+			DxStencilView->Release();
+			Dx2DTexture->Release();
 
-	window = CreateWindowEx(WS_EX_APPWINDOW, L"DirectXApplication", L"Project", nStyle, 0, 0, screenWidth, screenHeight, NULL, NULL, application, NULL);
+			HRESULT hr;
+			// Preserve the existing buffer count and format.
+			// Automatically choose the width and height to match the client rect for HWNDs.
+			hr = DxSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+			DXGI_SWAP_CHAIN_DESC SwapDesc;
+			DxSwapChain->GetDesc(&SwapDesc);
+
+			int fieldOfview = 65;
+			float nearPlane = 0.1f;
+			float farPlane = 100.0f;
+			float Yscale = 1 / tan(XMConvertToRadians(fieldOfview * 0.5f));
+			float AspectRatio = SwapDesc.BufferDesc.Width / SwapDesc.BufferDesc.Height;
+			Mycam.SetProjectionMatrix(XMMatrixPerspectiveFovLH(XMConvertToRadians(fieldOfview), AspectRatio, nearPlane, farPlane));
+
+			D3D11_TEXTURE2D_DESC descDepth;
+			ZeroMemory(&descDepth, sizeof(descDepth));
+			descDepth.Width = SwapDesc.BufferDesc.Width;
+			descDepth.Height = SwapDesc.BufferDesc.Height;
+			descDepth.MipLevels = 1;
+			descDepth.ArraySize = 1;
+			descDepth.Format = DXGI_FORMAT_D32_FLOAT;
+			descDepth.SampleDesc.Count = 4;
+			descDepth.SampleDesc.Quality = D3D11_STANDARD_MULTISAMPLE_PATTERN;
+			descDepth.Usage = D3D11_USAGE_DEFAULT;
+			descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+			descDepth.CPUAccessFlags = 0;
+			descDepth.MiscFlags = 0;
+			DxDevice->CreateTexture2D(&descDepth, NULL, &DxDeviceDepthStencil);
+
+			InitDepthStencilViews();
+
+			// Get buffer and create a render-target-view.
+			ID3D11Texture2D* pBuffer;
+			hr = DxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
+				(LPVOID*)&pBuffer);
+			// Perform error handling here!
+
+			hr = DxDevice->CreateRenderTargetView(pBuffer, NULL,
+				&DxRenderTargetView);
+			// Perform error handling here!
+			pBuffer->Release();
+
+			DxDeviceContext->OMSetRenderTargets(1, &DxRenderTargetView, NULL);
+
+			InitViewPort(0, 1, SwapDesc.BufferDesc.Width, SwapDesc.BufferDesc.Height, 2);
+		}
+	return;
 }
 
 void DxInit::Release()
@@ -532,12 +808,13 @@ void DxInit::Release()
 	
 	Dx2DTexture->Release();
 	
-//	DxBuffer->Release();
 	ConstBuffer->Release();
-//	ConstSceneBuffer->Release();
+
+	LightsBuffer->Release();
 
 	DxVertexShader->Release();
 	DxPixelShader->Release();
+	DxSkyPixelShader->Release();
 
 	layout->Release();
 
@@ -546,13 +823,22 @@ void DxInit::Release()
 
 	VertexBuffer->Release();
 	VertexBuffer2->Release();
+	VertexBuffer3->Release();
 	IndexBuffer->Release();
+//	IndexBuffer3->Release();
 
 	DxSampler->Release();
 	DxShaderResourceView->Release();
 	DxShaderResourceView2->Release();
+	DxShaderResourceViewSKY->Release();
 
 	DxRasterState->Release();
+
+	DxShaderResourceViewFloor->Release();
+
+	ConstBufferInstance->Release();
+	DxVertexShaderInstance->Release();
+	
 
 	UnregisterClass(L"DirectXApplication", application);
 }

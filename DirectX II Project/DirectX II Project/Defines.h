@@ -7,6 +7,8 @@
 
 #include "Trivial_PS.csh"
 #include "Trivial_VS.csh"
+#include "PixelShader.csh"
+#include "VertexShaderInstance.csh"
 
 #include <iostream>
 #include <ctime>
@@ -19,9 +21,6 @@ using namespace DirectX;
 
 #define BACKBUFFER_WIDTH	500
 #define BACKBUFFER_HEIGHT	500
-
-const bool Is_FullScreen = true;
-const bool Is_VSync = false;
 
 struct MatrixTrio
 {
@@ -38,6 +37,18 @@ struct Send_To_VRAM
 	XMFLOAT3 norms;
 };
 
+struct LIGHTS
+{
+	XMFLOAT3 dir = { -10, 10, 0 };
+	float padding1;
+	XMFLOAT3 point = { 3, 0, 0 };
+	float padding2;
+	XMFLOAT3 SpotPos;
+	float padding3;
+	XMFLOAT3 SpotDir;
+	float padding4;
+};
+
 struct Vertex
 {
 	float Mrarray[4];
@@ -50,6 +61,7 @@ struct TexutreThread
 {
 	ID3D11Device ** ThreadDevice;
 	ID3D11ShaderResourceView ** ThreadSRV;
+	ID3D11DeviceContext ** ThreadContext;
 };
 
 struct Thingys
@@ -57,4 +69,9 @@ struct Thingys
 	XMMATRIX WorldMatrix;
 	XMFLOAT3 Pos;
 	XMFLOAT3 Rotation;
+};
+
+struct NewGuys
+{
+	XMFLOAT4X4 NewOne[2];
 };

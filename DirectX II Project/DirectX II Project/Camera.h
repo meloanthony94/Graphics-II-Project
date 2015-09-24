@@ -12,6 +12,8 @@ public:
 	MatrixTrio GetMatrix(){ /*Matricies.ViewMatrix = XMMatrixInverse(NULL, Matricies.ViewMatrix);*/ return Matricies; };
 	void SetMatrix(MatrixTrio newMatrix, int type);
 	void SetWorldMatrix(XMMATRIX newWorld){ Matricies.WorldMatrix = newWorld; }
+	void SetViewMatrix(XMMATRIX newWorld){ Matricies.ViewMatrix = newWorld; }
+	void SetProjectionMatrix(XMMATRIX newWorld){ Matricies.ProjectionMatrix = newWorld; }
 	void CameraTranslation();
 	void CameraRotation();
 };

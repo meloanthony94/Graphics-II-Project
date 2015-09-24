@@ -6,14 +6,13 @@
 //#define new new( _NORMAL_BLOCK, __FILE__, __LINE__) //this lets me double-click a memory leak to take me to the line it occured
 //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 //_CrtSetBreakAlloc(-1L);
-
+DxInit MrDx;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine,	int nCmdShow );						   
 LRESULT CALLBACK WndProc(HWND hWnd,	UINT message, WPARAM wparam, LPARAM lparam );		
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE, LPTSTR, int )
 {
 	srand(unsigned int(time(0)));
-	DxInit MrDx;
 
 	MrDx.CreateMyWindow(hInstance, (WNDPROC)WndProc);
 	MrDx.Initalize();
@@ -40,9 +39,18 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
     {
         case ( WM_DESTROY ): { PostQuitMessage( 0 ); }
         break;
-		case (WM_SIZE) :
+		case (WM_SIZE):
 		{
-
+			MrDx.Resize();
+		}
+		 break;
+		case (WM_KEYDOWN) :
+		{
+			if (wParam == VK_TAB)
+			{
+				MrDx.Is_FullScreen = true;
+				MrDx.Resize();
+			}
 		}
 		break;
     }

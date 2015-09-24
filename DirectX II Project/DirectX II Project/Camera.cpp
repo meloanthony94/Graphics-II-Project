@@ -14,8 +14,8 @@ void Camera::InitMatrices(float width, float height)
 {
 	int fieldOfview = 65;
 	float nearPlane = 0.1f;
-	float farPlane = 1000.0f;
-	float Yscale = 1 / tan(XMConvertToDegrees(fieldOfview * 0.5f));
+	float farPlane = 100.0f;
+	float Yscale = 1 / tan(XMConvertToRadians(fieldOfview * 0.5f));
 	float AspectRatio = width / height;
 	//float Xscale = Yscale * AspectRatio;
 

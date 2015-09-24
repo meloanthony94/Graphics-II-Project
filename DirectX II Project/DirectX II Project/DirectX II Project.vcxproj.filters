@@ -36,6 +36,9 @@
     <ClCompile Include="ThreadTexture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Lights.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectXinitializer.h">
@@ -65,22 +68,29 @@
     <ClInclude Include="ThreadTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Lights.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Trivial_PS.hlsl" />
     <FxCompile Include="Trivial_VS.hlsl" />
+    <FxCompile Include="PixelShader.hlsl" />
+    <FxCompile Include="VertexShaderInstance.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Trivial_PS.csh" />
     <None Include="Trivial_VS.csh" />
+    <None Include="PixelShader.csh" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="metallock.dds" />
     <Image Include="sheild.jpg">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="bleachedWood_seamless.dds" />
     <Image Include="Spiderman_D.dds" />
-    <Image Include="Iron_Man_Marvel_NOW_D.dds" />
+    <Image Include="SunsetSkybox.dds" />
+    <Image Include="pavement_seamless.dds" />
+    <Image Include="Gotham_Skyline_BuildingBLock01_D.dds" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "Object.h"
 #include "ThreadTexture.h"
+#include "Lights.h"
 
 class DxInit
 {
@@ -23,12 +24,13 @@ class DxInit
 
 	ID3D11Texture2D *			    Dx2DTexture;
 	
-	ID3D11Buffer * DxBuffer;
 	ID3D11Buffer * ConstBuffer;
-	ID3D11Buffer * ConstSceneBuffer;
+	ID3D11Buffer * ConstBufferInstance;
 	
 	ID3D11VertexShader * DxVertexShader;
+	ID3D11VertexShader * DxVertexShaderInstance;
 	ID3D11PixelShader * DxPixelShader;
+	ID3D11PixelShader * DxSkyPixelShader;
 	
 	ID3D11InputLayout * layout;
 	
@@ -37,12 +39,18 @@ class DxInit
 	
 	ID3D11Buffer * VertexBuffer;
 	ID3D11Buffer * VertexBuffer2;
+	ID3D11Buffer * VertexBuffer3;
 	ID3D11Buffer * IndexBuffer;
 	ID3D11Buffer * IndexBuffer2;
+	ID3D11Buffer * IndexBuffer3;
 	
+	ID3D11Buffer * LightsBuffer;
+
 	ID3D11SamplerState * DxSampler;
 	ID3D11ShaderResourceView * DxShaderResourceView;
 	ID3D11ShaderResourceView * DxShaderResourceView2;
+	ID3D11ShaderResourceView * DxShaderResourceViewSKY;
+	ID3D11ShaderResourceView * DxShaderResourceViewFloor;
 
 	ID3D11RasterizerState * DxRasterState;
 	
@@ -51,6 +59,7 @@ class DxInit
 	Camera Mycam;
 	XTime MrTimer;
 	Object Model;
+	Lights lighting;
 
 	///
 	vector< Send_To_VRAM > vertices;
@@ -58,12 +67,20 @@ class DxInit
 	vector< XMFLOAT3 > normals;
 	vector< unsigned int > index;
 	vector< unsigned int > index2;
+	vector< unsigned int > index3;
+	vector< unsigned int > index4;
 
 	vector<Thingys> MyThings;
+	Thingys myCamera;
 
 	Vertex *Star;
+	LIGHTS MyLights;
+	NewGuys instance;
+
+	bool SpotLight = true;
 
 public:
+	bool Is_FullScreen = false;
 
 	DxInit(){};
 	~DxInit(){};
@@ -73,7 +90,7 @@ public:
 	void InitSwapChain(HWND window, int width, int height);
 	void InitViewPort(float minDepth, float maxDepth, float width, float height, unsigned int NumOfViewPorts);
 	void InitVertexBuffers();
-	void InitIndexBuffers();
+	ID3D11Buffer * InitIndexBuffers(ID3D11Buffer * buffer, vector< unsigned int > indicies);
 	void InitTextures();
 	void InitSampler();
 	void InitSRVs();
@@ -81,6 +98,7 @@ public:
 	void InitDepthStencilViews();
 	void InitInputLayouts();
 	void InitConstBuffers();
+	void InitLightBuffer();
 	void InitShaders();
 	void InitRasterizer();
 

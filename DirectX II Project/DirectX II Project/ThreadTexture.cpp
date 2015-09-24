@@ -2,5 +2,10 @@
 
 void LoadME(TexutreThread * picture)
 {
-	CreateDDSTextureFromFile(*picture->ThreadDevice, L"bleachedWood_seamless.dds", NULL, *&picture->ThreadSRV);
+	CreateDDSTextureFromFile(*picture->ThreadDevice, L"Gotham_Skyline_BuildingBLock01_D.dds", NULL, *&picture->ThreadSRV);
+}
+
+void ThreadDrawSpidey(TexutreThread * model)
+{
+	(*model->ThreadContext)->Draw(26940, 0);
 }
